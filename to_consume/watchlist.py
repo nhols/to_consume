@@ -1,14 +1,32 @@
+import json
 from datetime import datetime
-from pandas import DataFrame
 
-from to_consume.movies_database import Listing
-from to_consume.streaming_availability import get_streaming_availability_list
+from to_consume.title import Title
 
 
-def add_to_list(listing_info: Listing) -> None:
-    df = DataFrame([listing_info.get_watchlist_record()])
-    df["watched"] = False
-    df["rating"] = None
-    df["where"] = [get_streaming_availability_list(listing_info.imdb_id)]
-    df["added"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    df.to_csv("watchlist.csv", mode="a", header=False, index=False)
+def add_to_list(imdb_id: str) -> None:
+    try:
+        with open("watchlist.json", "r") as f:
+            watchlist = json.load(f)
+    except FileNotFoundError:
+        watchlist = {}
+    if imdb_id in watchlist:
+        raise ValueError(f"{imdb_id} is already in the watchlist")
+
+    new_record = {
+        "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "watched": False,
+    }
+    watchlist[imdb_id] = new_record
+
+    with open("watchlist.json", "w") as f:
+        json.dump(watchlist, f)
+
+
+def load_watchlist() -> dict:
+    with open("watchlist.json", "r") as f:
+        watchlist = json.load(f)
+    for imdb_id in watchlist.keys():
+        watchlist[imdb_id]["title"] = Title(imdb_id)
+    return watchlist

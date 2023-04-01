@@ -1,6 +1,9 @@
+import sys
+
+sys.path.append("/home/neil/repos/to_consume")
 from to_consume.watchlist import add_to_list
 from to_consume.imdb import IMDBListing, IMDBSearch
-from to_consume.movies_database import Listing
+from to_consume.movies_database import MoviesDatabaseTitle
 
 titles = [
     "alice in borderland",
@@ -59,16 +62,131 @@ titles = [
     "Zodiac",
 ]
 
-if __name__ == "__main__":
+imdb_ids = [
+    "tt0443706",
+    "tt10795658",
+    "tt0020629",
+    "tt1596589",
+    "tt4288182",
+    "tt9814116",
+    "tt10541088",
+    "tt3322312",
+    "tt9562568",
+    "tt10814062",
+    "tt8772296",
+    "tt0119177",
+    "tt0887912",
+    "tt15083184",
+    "tt0343818",
+    "tt2357547",
+    "tt1950186",
+    "tt1615147",
+    "tt0892782",
+    "tt5675620",
+    "tt17036612",
+    "tt3170832",
+    "tt15474916",
+    "tt0245429",
+    "tt10986410",
+    "tt0458290",
+    "tt3581920",
+    "tt3659388",
+    "tt8291284",
+    "tt11291274",
+    "tt13833688",
+    "tt13443470",
+    "tt1233514",
+    "tt9253284",
+    "tt1549572",
+    "tt1630029",
+    "tt12593682",
+    "tt1160419",
+    "tt6710474",
+    "tt11564570",
+    "tt4846232",
+    "tt0780536",
+    "tt0335266",
+    "tt2442560",
+    "tt6723592",
+    "tt5015534",
+    "tt13406094",
+    "tt1790885",
+    "tt0443706",
+    "tt10795658",
+    "tt0020629",
+    "tt1596589",
+    "tt4288182",
+    "tt9814116",
+    "tt3322312",
+    "tt9562568",
+    "tt8772296",
+    "tt0119177",
+    "tt6966692",
+    "tt0887912",
+    "tt15083184",
+    "tt0343818",
+    "tt2357547",
+    "tt1950186",
+    "tt1615147",
+    "tt0892782",
+    "tt5675620",
+    "tt17036612",
+    "tt3170832",
+    "tt15474916",
+    "tt0245429",
+    "tt10986410",
+    "tt0458290",
+    "tt3581920",
+    "tt3659388",
+    "tt8291284",
+    "tt11291274",
+    "tt13833688",
+    "tt13443470",
+    "tt1233514",
+    "tt9253284",
+    "tt1549572",
+    "tt1630029",
+    "tt12593682",
+    "tt1160419",
+    "tt6710474",
+    "tt11564570",
+    "tt4846232",
+    "tt0780536",
+    "tt0335266",
+    "tt2442560",
+    "tt11280740",
+    "tt6723592",
+    "tt5015534",
+    "tt13406094",
+    "tt1790885",
+    "tt0443706",
+]
+
+
+def get_titles():
     for title in titles:
         try:
             search_res = IMDBSearch(title)
             if search_res.hrefs:
                 first_res = IMDBListing(search_res.hrefs[0])
-                listing = Listing(first_res.imdb_id)
+                listing = MoviesDatabaseTitle(first_res.imdb_id)
                 add_to_list(listing)
                 print(f"Added {title}")
             else:
                 print(f"Could not find {title}")
         except:
             print(f"Could not find {title}")
+
+
+def get_imdb_ids():
+    for imdb_id in imdb_ids:
+        try:
+            listing = MoviesDatabaseTitle(imdb_id)
+            add_to_list(listing.imdb_id)
+            print(f"Added {imdb_id}")
+        except Exception as e:
+            print(f"falied to add {imdb_id}", e)
+
+
+if __name__ == "__main__":
+    get_imdb_ids()

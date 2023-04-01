@@ -75,7 +75,7 @@ class IMDBListing:
         self.imdb_type = components[1]
 
 
-t = IMDBSearch("Alice in Borderland")
+# t = IMDBSearch("Alice in Borderland")
 # t2 = IMDBScraper("The whale")
 # t2 = IMDBScraper("Jessica jones")
 # t2._get_listing_info()
