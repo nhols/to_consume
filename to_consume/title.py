@@ -6,7 +6,8 @@ from to_consume.streaming_availability import StreamingInfoTitle
 
 class Title(MoviesDatabaseTitle, StreamingInfoTitle):
     def __init__(self, imdb_id: str) -> None:
-        super().__init__(imdb_id)
+        StreamingInfoTitle.__init__(self, imdb_id)
+        MoviesDatabaseTitle.__init__(self, imdb_id)
         self._set_urls()
 
     def _set_urls(self) -> None:

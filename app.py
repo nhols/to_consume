@@ -1,35 +1,44 @@
 from datetime import datetime
-from to_consume.watchlist import add_to_list, load_watchlist
+import logging
+from to_consume.exceptions import ItemAlreadyInListError
+from to_consume.watchlist import add_to_list, delete_from_list, load_watchlist_titles
 from to_consume.imdb import IMDBSearch, IMDBListing
 from to_consume.movies_database import MoviesDatabaseTitle
 import streamlit as st
 from pandas import DataFrame, read_csv
 import numpy as np
-from to_consume.streaming_availability import get_streaming_availability_list
 
 st.set_page_config(layout="wide")
 
-# TODO cache api calls
-# TODO title display with info, urls, rating
+# TODO dataframe with whole list view
+# TODO title display with info, urls, rating, where to watch
+# TODO watched + rating option
 # TODO seasons
 # TODO remove from list
 # TODO refresh imdb ratings
 # TODO readlist
 # TODO manual entry
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 @st.cache_data
 def st_load_watchlist() -> dict:
     try:
-        return load_watchlist()
+        return load_watchlist_titles()
     except FileNotFoundError:
         st.write("Watchlist is empty, search for titles to add to the list")
         return {}
 
 
 def st_add_to_list(imdb_id: str) -> None:
-    add_to_list(imdb_id)
-    st_load_watchlist.clear_cache()
+    try:
+        add_to_list(imdb_id)
+    except ItemAlreadyInListError:
+        st.warning(f"{imdb_id} already in the list")
+        return None
+    st.success(f"Added {imdb_id} to the watchlist")
+    st_load_watchlist.clear()  # had to manually create ~/.streamlit/cache dir to get this working - bug?
 
 
 with st.sidebar:
@@ -44,27 +53,34 @@ with st.sidebar:
                 st.json(listing_info.title_info, expanded=False)
                 if listing_info.image_url:
                     st.image(listing_info.image_url, width=200)
-                st.button("Add to list", args=[listing.imdb_id], on_click=add_to_list)
+                st.button("Add to list", key=listing.imdb_id, args=[listing.imdb_id], on_click=st_add_to_list)
+                st.markdown("""---""")
     searched_title = ""
 
-
 watchlist = st_load_watchlist()
-
-selected_imdb_id = st.selectbox("View title from watchlist", options=watchlist.keys())
+st_load_watchlist.clear()
+selected_imdb_id = st.selectbox(
+    "View title from watchlist", options=watchlist.keys(), format_func=lambda x: watchlist[x]["title"].title
+)
 if selected_imdb_id:
     selected_title = watchlist[selected_imdb_id]
-    st.title(selected_title["title"].title)
-    st.subheader(selected_title["title"].type)
+    title = selected_title["title"]
+    st.title(title.title)
+    st.subheader(title.type)
     col1, col2 = st.columns(2)
     with col1:
-        st.image(selected_title["title"].image_url, width=400)
+        st.image(title.image_url, width=400)
     with col2:
-        st.write(f'[IMDb]({selected_title["title"].imdb_url})')
-        st.write(f'[Just Watch]({selected_title["title"].just_watch_url})')
-        st.write(f'[UNOGS]({selected_title["title"].unogs_url})')
+        st.write(title.overview)
+        st.write(title.tagline)
+        st.write(title.streaming_platforms)
+        st.write(f"[IMDb]({title.imdb_url})")
+        st.write(f"[Just Watch]({title.just_watch_url})")
+        st.write(f"[UNOGS]({title.unogs_url})")
         st.write(
-            f"Average IMDb rating: {selected_title['title'].avg_imdb_rating}/10⭐ ({selected_title['title'].imdb_ratings_count} ratings)"
+            f"Average IMDb rating: {selected_title['title'].avg_imdb_rating}⭐ ({selected_title['title'].imdb_ratings_count} ratings)"
         )
+    st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
 # try:
 #     df_watchlist = read_csv(
 #         "watchlist.csv",
