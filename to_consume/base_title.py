@@ -10,6 +10,7 @@ class BaseTitle:
         self.type = None
         self.avg_imdb_rating = None
         self.streaming_platforms = None
+        self.image_url = None
 
     def set_attr_from_dict_if_exists(
         self, d: dict, attr_name: str, keys: list[str], preprocess_function: Callable | None = None
