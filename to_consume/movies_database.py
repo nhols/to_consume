@@ -1,6 +1,7 @@
 from typing import Any
 import requests
 import os
+from to_consume.base_title import BaseTitle
 from to_consume.cache import persist_to_file
 from to_consume.utils import recurse_through_dict
 
@@ -9,22 +10,22 @@ BASE_URL = "https://moviesdatabase.p.rapidapi.com/"
 HEADERS = {"X-RapidAPI-Key": os.getenv("RAPID_API_KEY"), "X-RapidAPI-Host": "moviesdatabase.p.rapidapi.com"}
 
 
-class MoviesDatabaseTitle:
+class MoviesDatabaseTitle(BaseTitle):
     def __init__(self, imdb_id: str) -> None:
-        self.imdb_id = imdb_id
+        super().__init__(imdb_id)
         self.get_title_info()
         self.get_title_ratings()
 
     def get_title_info(self) -> None:
         self.title_info = get_title_info(self.imdb_id)
-        self.title = recurse_through_dict(self.title_info, ["titleText", "text"])
-        self.type = recurse_through_dict(self.title_info, ["titleType", "text"])
-        self.image_url = recurse_through_dict(self.title_info, ["primaryImage", "url"])
+        self.set_attr_from_dict_if_exists(self.title_info, "title", ["titleText", "text"])
+        self.set_attr_from_dict_if_exists(self.title_info, "type", ["titleType", "text"])
+        self.set_attr_from_dict_if_exists(self.title_info, "image_url", ["primaryImage", "url"])
 
     def get_title_ratings(self) -> None:
         self.title_ratings = get_title_ratings(self.imdb_id)
-        self.avg_imdb_rating = recurse_through_dict(self.title_ratings, ["averageRating"])
-        self.imdb_ratings_count = recurse_through_dict(self.title_ratings, ["numVotes"])
+        self.set_attr_from_dict_if_exists(self.title_ratings, "avg_imdb_rating", ["averageRating"])
+        self.set_attr_from_dict_if_exists(self.title_ratings, "imdb_ratings_count", ["numVotes"])
 
     def get_watchlist_record(self) -> dict:
         return {k: v for k, v in self.__dict__.items() if k not in ["title_info", "title_ratings", "image_url"]}

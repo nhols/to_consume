@@ -10,10 +10,9 @@ import numpy as np
 
 st.set_page_config(layout="wide")
 
-# TODO dataframe with whole list view
-# TODO title display with info, urls, rating, where to watch
 # TODO watched + rating option
 # TODO seasons
+# TODO season rating trendts
 # TODO remove from list
 # TODO refresh imdb ratings
 # TODO readlist
@@ -58,7 +57,21 @@ with st.sidebar:
     searched_title = ""
 
 watchlist = st_load_watchlist()
-st_load_watchlist.clear()
+
+
+def watchlist_df():
+    watchlist = st_load_watchlist()
+    records = [x["title"].get_title_df_record() | {"last_updated": x["last_updated"]} for x in watchlist.values()]
+    df = (
+        DataFrame.from_records(records, index="imdb_id")
+        .sort_values("last_updated", ascending=False)
+        .drop("last_updated", axis=1)
+    )
+    st.dataframe(df, use_container_width=True)
+
+
+watchlist_df()
+
 selected_imdb_id = st.selectbox(
     "View title from watchlist", options=watchlist.keys(), format_func=lambda x: watchlist[x]["title"].title
 )
@@ -69,7 +82,8 @@ if selected_imdb_id:
     st.subheader(title.type)
     col1, col2 = st.columns(2)
     with col1:
-        st.image(title.image_url, width=400)
+        if title.image_url:
+            st.image(title.image_url, width=400)
     with col2:
         st.write(title.overview)
         st.write(title.tagline)
@@ -80,6 +94,7 @@ if selected_imdb_id:
         st.write(
             f"Average IMDb rating: {selected_title['title'].avg_imdb_rating}⭐ ({selected_title['title'].imdb_ratings_count} ratings)"
         )
+    st.video(title.trailer_url)
     st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
 # try:
 #     df_watchlist = read_csv(
