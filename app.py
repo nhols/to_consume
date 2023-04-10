@@ -21,6 +21,7 @@ st.set_page_config(
 # TODO manual entry
 # TODO streaming platform icons with links
 # TODO users
+# TODO persist in db
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -52,21 +53,46 @@ def st_add_to_list(imdb_id: str) -> None:
     st_load_watchlist.clear()  # had to manually create ~/.streamlit/cache dir to get this working - bug?
 
 
+def st_update_watchlist(imdb_id: str, watched: bool, rating: int) -> None:
+    update_watchlist(imdb_id, watched, rating)
+    st.success(f"Updated title {imdb_id}")
+    st_load_watchlist.clear()
+
+
+def st_delete_from_list(imdb_id: str) -> None:
+    delete_from_list(imdb_id)
+    st.success(f"Deleted title {imdb_id}")
+    st_load_watchlist.clear()
+
+
+def add_imdb_ids(imdb_ids: str) -> None:
+    for imdb_id in imdb_ids.split(","):
+        st_add_to_list(imdb_id)
+
+
+def searched_title_add(searched_title: str):
+    scraped_title = IMDBSearch(searched_title)
+    for href in scraped_title.hrefs:
+        listing = IMDBListing(href)
+        if listing.imdb_type == "title":
+            st.write(f"[🔗]({listing.url})")
+            listing_info = MoviesDatabaseTitle(listing.imdb_id)
+            st.json(listing_info.title_info, expanded=False)
+            if listing_info.image_url:
+                st.image(listing_info.image_url, width=200)
+            st.button("Add to list", key=listing.imdb_id, args=[listing.imdb_id], on_click=st_add_to_list)
+            st.markdown("""---""")
+
+
 with st.sidebar:
+    imdb_ids = st.text_input("Add titles by their IMDb ID", help="Separate multiple IDs with commas")
+    if imdb_ids:
+        add_imdb_ids(imdb_ids)
+        imdb_ids = ""
     searched_title = st.text_input("Search title", key="search_title", value="")
     if searched_title:
-        scraped_title = IMDBSearch(searched_title)
-        for href in scraped_title.hrefs:
-            listing = IMDBListing(href)
-            if listing.imdb_type == "title":
-                st.write(f"[🔗]({listing.url})")
-                listing_info = MoviesDatabaseTitle(listing.imdb_id)
-                st.json(listing_info.title_info, expanded=False)
-                if listing_info.image_url:
-                    st.image(listing_info.image_url, width=200)
-                st.button("Add to list", key=listing.imdb_id, args=[listing.imdb_id], on_click=st_add_to_list)
-                st.markdown("""---""")
-    searched_title = ""
+        searched_title_add(searched_title)
+        searched_title = ""
 
 watchlist = st_load_watchlist()
 
@@ -107,7 +133,7 @@ if selected_imdb_id:
         st.write(f"Average IMDb rating: {title.avg_imdb_rating}⭐ ({title.imdb_ratings_count} ratings)")
         watched = st.checkbox("Watched", value=selected_title["watched"])
         rating = st.slider("Rating", value=selected_title["rating"], min_value=1, max_value=100, disabled=not watched)
-        st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=update_watchlist)
+        st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=st_update_watchlist)
         st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
     st.video(title.trailer_url)
 # try:
