@@ -1,4 +1,5 @@
 import logging
+from pandas import DataFrame
 from requests import request
 import os
 import json
@@ -32,7 +33,33 @@ class StreamingInfoTitle(BaseTitle):
 
     def _get_streaming_availability(self):
         streaming_info = recurse_through_dict(self.basic_resp, ["streamingInfo", "gb"])
-        self.streaming_platforms = [] if not streaming_info else list(streaming_info.keys())
+        self.streaming_platforms = []
+        self.streaming_links = {}
+        if streaming_info:
+            for platform in streaming_info:
+                self.streaming_platforms.append(platform)
+                watchlink = streaming_info[platform][0]["link"]
+                self.streaming_links[platform] = watchlink
+                self.streaming_platforms = [] if not streaming_info else list(streaming_info.keys())
+
+    def get_seasons_df(self) -> DataFrame:
+        records = []
+        for season in self.basic_resp.get("seasons", []):
+            season_title = season.get("title")
+            episodes = season.get("episodes")
+            if episodes:
+                for episode in episodes:
+                    records.append(
+                        (
+                            season_title,
+                            episode.get("title"),
+                            episode.get("imdbRating") / 10,
+                            episode.get("imdbVoteCount"),
+                            episode.get("overview"),
+                        )
+                    )
+
+        return DataFrame(records, columns=["season", "episode", "imdb_rating", "imdb_ratings_count", "overview"])
 
 
 @persist_to_file("streaming_info_get_basic.json")

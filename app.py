@@ -1,12 +1,15 @@
 from datetime import datetime
 import logging
+from random import randint
 from to_consume.exceptions import ItemAlreadyInListError
+from to_consume.title import Title
 from to_consume.watchlist import add_to_list, delete_from_list, load_watchlist_titles, update_watchlist
 from to_consume.imdb import IMDBSearch, IMDBListing
 from to_consume.movies_database import MoviesDatabaseTitle
 import streamlit as st
 from pandas import DataFrame, read_csv
 import numpy as np
+import plotly.express as px
 
 st.set_page_config(
     page_title="Watchlist",
@@ -88,11 +91,11 @@ with st.sidebar:
     imdb_ids = st.text_input("Add titles by their IMDb ID", help="Separate multiple IDs with commas")
     if imdb_ids:
         add_imdb_ids(imdb_ids)
-        imdb_ids = ""
+    imdb_ids = ""
     searched_title = st.text_input("Search title", key="search_title", value="")
     if searched_title:
         searched_title_add(searched_title)
-        searched_title = ""
+    searched_title = ""
 
 watchlist = st_load_watchlist()
 
@@ -108,51 +111,70 @@ def watchlist_df():
     st.dataframe(df, use_container_width=True)
 
 
+def plot_episode_ratings(title: Title):
+    df = title.get_seasons_df()
+    if not df.empty:
+        fig = px.line(
+            df,
+            x=df.index,
+            y="imdb_rating",
+            color="season",
+            title="Episode ratings",
+            hover_data=["season", "episode", "imdb_rating", "imdb_ratings_count", "overview"],
+            markers=True,
+        )
+        fig.update_xaxes(visible=False)
+        fig.update_yaxes(showgrid=False)
+        st.plotly_chart(fig, use_container_width=True)
+
+
+def display_title(selected_imdb_id):
+    if selected_imdb_id:
+        selected_title = watchlist[selected_imdb_id]
+        title = selected_title["title"]
+        plot_episode_ratings(title)
+        st.title(title.title)
+        st.subheader(title.type)
+        col1, col2 = st.columns(2)
+        with col1:
+            if title.image_url:
+                st.image(title.image_url, width=400)
+        with col2:
+            st.write(title.overview)
+            st.write(title.tagline)
+            st.markdown("""---""")
+            for platform, link in title.streaming_links.items():
+                st.write(f"[{platform}]({link})")
+            st.markdown("""---""")
+            st.write(f"[IMDb]({title.imdb_url})")
+            st.write(f"[Just Watch]({title.just_watch_url})")
+            st.write(f"[UNOGS]({title.unogs_url})")
+            st.markdown("""---""")
+            st.write(f"Average IMDb rating: {title.avg_imdb_rating}⭐ ({title.imdb_ratings_count} ratings)")
+            st.markdown("""---""")
+            watched = st.checkbox("Watched", value=selected_title["watched"])
+            rating = st.slider(
+                "Rating", value=selected_title["rating"], min_value=1, max_value=100, disabled=not watched
+            )
+            st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=st_update_watchlist)
+            st.markdown("""---""")
+            st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
+        st.video(title.trailer_url)
+
+
 if watchlist:
     watchlist_df()
 
+
 selected_imdb_id = st.selectbox(
-    "View title from watchlist", options=watchlist.keys(), format_func=lambda x: watchlist[x]["title"].title
+    "View title from watchlist",
+    options=[None] + list(watchlist.keys()),
+    format_func=lambda x: "" if x is None else watchlist[x]["title"].title,
 )
-if selected_imdb_id:
-    selected_title = watchlist[selected_imdb_id]
-    title = selected_title["title"]
-    st.title(title.title)
-    st.subheader(title.type)
-    col1, col2 = st.columns(2)
-    with col1:
-        if title.image_url:
-            st.image(title.image_url, width=400)
-    with col2:
-        st.write(title.overview)
-        st.write(title.tagline)
-        st.write(title.streaming_platforms)
-        st.write(f"[IMDb]({title.imdb_url})")
-        st.write(f"[Just Watch]({title.just_watch_url})")
-        st.write(f"[UNOGS]({title.unogs_url})")
-        st.write(f"Average IMDb rating: {title.avg_imdb_rating}⭐ ({title.imdb_ratings_count} ratings)")
-        watched = st.checkbox("Watched", value=selected_title["watched"])
-        rating = st.slider("Rating", value=selected_title["rating"], min_value=1, max_value=100, disabled=not watched)
-        st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=st_update_watchlist)
-        st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
-    st.video(title.trailer_url)
+display_title(selected_imdb_id)
+
 # try:
-#     df_watchlist = read_csv(
-#         "watchlist.csv",
-#         index_col="imdb_id",
-#         dtype={
-#             "imdb_id": str,
-#             "title": str,
-#             "type": str,
-#             "avg_imdb_rating": float,
-#             "imdb_ratings_count": "Int64",
-#             "watched": bool,
-#             "rating": "Int64",
-#         },
-#         converters={"where": lambda x: x.strip("[]").strip("'").split(",")},
-#         parse_dates=["added"],
-#     )
-#     # st.experimental_data_editor(df_watchlist, on_change=update_watchlist, key="watchlist", use_container_width=True)
-#     st.dataframe(df_watchlist, use_container_width=True)
-# except:
-#     pass
+# display_title(selected_imdb_id)
+# except Exception as e:
+# st.error(f"Error displaying title {e}")
+# st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
