@@ -8,7 +8,11 @@ import streamlit as st
 from pandas import DataFrame, read_csv
 import numpy as np
 
-st.set_page_config(page_title="Watchlist", page_icon="🎬"  layout="wide")
+st.set_page_config(
+    page_title="Watchlist",
+    page_icon="🎬",
+    layout="wide",
+)
 
 # TODO seasons
 # TODO season rating trends
