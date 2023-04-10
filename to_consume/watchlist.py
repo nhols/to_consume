@@ -15,6 +15,7 @@ def add_to_list(imdb_id: str) -> None:
         "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "watched": False,
+        "rating": None,
     }
     watchlist[imdb_id] = new_record
     write_watchlist(watchlist)
@@ -25,6 +26,16 @@ def delete_from_list(imdb_id: str) -> None:
     if imdb_id not in watchlist:
         raise ItemNotInListError(f"{imdb_id} is not in the watchlist")
     del watchlist[imdb_id]
+    write_watchlist(watchlist)
+
+
+def update_watchlist(imdb_id: str, watched: bool, rating: int) -> None:
+    watchlist = load_watchlist()
+    if imdb_id not in watchlist:
+        raise ItemNotInListError(f"{imdb_id} is not in the watchlist")
+    watchlist[imdb_id]["watched"] = watched
+    watchlist[imdb_id]["rating"] = rating if watched else None
+    watchlist[imdb_id]["last_updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     write_watchlist(watchlist)
 
 

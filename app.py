@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from to_consume.exceptions import ItemAlreadyInListError
-from to_consume.watchlist import add_to_list, delete_from_list, load_watchlist_titles
+from to_consume.watchlist import add_to_list, delete_from_list, load_watchlist_titles, update_watchlist
 from to_consume.imdb import IMDBSearch, IMDBListing
 from to_consume.movies_database import MoviesDatabaseTitle
 import streamlit as st
@@ -12,12 +12,12 @@ st.set_page_config(layout="wide")
 
 # TODO watched + rating option
 # TODO seasons
-# TODO season rating trendts
-# TODO remove from list
+# TODO season rating trends
 # TODO refresh imdb ratings
 # TODO readlist
 # TODO manual entry
-
+# TODO streaming platform icons with links
+# TODO users
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -91,11 +91,12 @@ if selected_imdb_id:
         st.write(f"[IMDb]({title.imdb_url})")
         st.write(f"[Just Watch]({title.just_watch_url})")
         st.write(f"[UNOGS]({title.unogs_url})")
-        st.write(
-            f"Average IMDb rating: {selected_title['title'].avg_imdb_rating}⭐ ({selected_title['title'].imdb_ratings_count} ratings)"
-        )
+        st.write(f"Average IMDb rating: {title.avg_imdb_rating}⭐ ({title.imdb_ratings_count} ratings)")
+        watched = st.checkbox("Watched", value=selected_title["watched"])
+        rating = st.slider("Rating", value=selected_title["rating"], min_value=1, max_value=100, disabled=not watched)
+        st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=update_watchlist)
+        st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
     st.video(title.trailer_url)
-    st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
 # try:
 #     df_watchlist = read_csv(
 #         "watchlist.csv",
