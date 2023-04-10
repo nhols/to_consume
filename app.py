@@ -8,9 +8,8 @@ import streamlit as st
 from pandas import DataFrame, read_csv
 import numpy as np
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Watchlist", page_icon="🎬"  layout="wide")
 
-# TODO watched + rating option
 # TODO seasons
 # TODO season rating trends
 # TODO refresh imdb ratings
@@ -19,6 +18,15 @@ st.set_page_config(layout="wide")
 # TODO streaming platform icons with links
 # TODO users
 logging.basicConfig(level=logging.DEBUG)
+
+
+# see https://github.com/streamlit/streamlit/issues/6310
+@st.cache_data(persist=True)
+def workaround():
+    return True
+
+
+x = workaround()
 
 
 @st.cache_data
@@ -70,7 +78,8 @@ def watchlist_df():
     st.dataframe(df, use_container_width=True)
 
 
-watchlist_df()
+if watchlist:
+    watchlist_df()
 
 selected_imdb_id = st.selectbox(
     "View title from watchlist", options=watchlist.keys(), format_func=lambda x: watchlist[x]["title"].title
