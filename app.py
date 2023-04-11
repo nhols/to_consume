@@ -159,7 +159,8 @@ def display_title(selected_imdb_id):
             st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=st_update_watchlist)
             st.markdown("""---""")
             st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
-        st.video(title.trailer_url)
+        if title.trailer_url:
+            st.video(title.trailer_url)
 
 
 if watchlist:
