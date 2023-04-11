@@ -10,9 +10,10 @@ class Title(MoviesDatabaseTitle, StreamingInfoTitle):
         self._set_urls()
 
     def _set_urls(self) -> None:
+        search_term = self.imdb_id if self.title is None else quote(self.title)
         self.imdb_url = f"https://www.imdb.com/title/{self.imdb_id}"
-        self.just_watch_url = f"https://www.justwatch.com/uk/search?q={quote(self.title)}"
-        self.unogs_url = f"https://unogs.com/search/{quote(self.title)}"
+        self.just_watch_url = f"https://www.justwatch.com/uk/search?q={search_term}"
+        self.unogs_url = f"https://unogs.com/search/{search_term}"
 
     def get_title_df_record(self) -> dict:
         return {
