@@ -73,5 +73,5 @@ def get_streaming_availability(imdb_id: str, country: str = "gb") -> dict | None
         return result
     if response.status_code == 404:
         logging.info(f"No streaming availability found for {imdb_id}")
-        return None
+        return {}
     logging.warning(f"Failed to get streaming availability for {imdb_id} with response: {response.text}")

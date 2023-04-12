@@ -18,7 +18,6 @@ st.set_page_config(
 )
 
 # TODO seasons
-# TODO season rating trends
 # TODO refresh imdb ratings
 # TODO readlist
 # TODO manual entry
@@ -128,6 +127,11 @@ def plot_episode_ratings(title: Title):
         st.plotly_chart(fig, use_container_width=True)
 
 
+def safe_write(obj, attr):
+    value = getattr(obj, attr, "")
+    st.write(value)
+
+
 def display_title(selected_imdb_id):
     if selected_imdb_id:
         selected_title = watchlist[selected_imdb_id]
@@ -140,8 +144,8 @@ def display_title(selected_imdb_id):
             if title.image_url:
                 st.image(title.image_url, width=400)
         with col2:
-            st.write(title.overview)
-            st.write(title.tagline)
+            safe_write(title, "overview")
+            safe_write(title, "tagline")
             st.markdown("""---""")
             for platform, link in title.streaming_links.items():
                 st.write(f"[{platform}]({link})")
