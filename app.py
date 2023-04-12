@@ -10,6 +10,7 @@ import streamlit as st
 from pandas import DataFrame, read_csv
 import numpy as np
 import plotly.express as px
+import streamlit_authenticator as stauth
 
 st.set_page_config(
     page_title="Watchlist",
@@ -86,19 +87,6 @@ def searched_title_add(searched_title: str):
             st.markdown("""---""")
 
 
-with st.sidebar:
-    imdb_ids = st.text_input("Add titles by their IMDb ID", help="Separate multiple IDs with commas")
-    if imdb_ids:
-        add_imdb_ids(imdb_ids)
-    imdb_ids = ""
-    searched_title = st.text_input("Search title", key="search_title", value="")
-    if searched_title:
-        searched_title_add(searched_title)
-    searched_title = ""
-
-watchlist = st_load_watchlist()
-
-
 def watchlist_df():
     watchlist = st_load_watchlist()
     records = [x["title"].get_title_df_record() | {"last_updated": x["last_updated"]} for x in watchlist.values()]
@@ -134,7 +122,7 @@ def safe_write(obj, attr):
 
 def display_title(selected_imdb_id):
     if selected_imdb_id:
-        selected_title = watchlist[selected_imdb_id]
+        selected_title = st.session_state.watchlist[selected_imdb_id]
         title = selected_title["title"]
         plot_episode_ratings(title)
         st.title(title.title)
@@ -167,19 +155,53 @@ def display_title(selected_imdb_id):
             st.video(title.trailer_url)
 
 
-if watchlist:
-    watchlist_df()
+def main_app():
+    with st.sidebar:
+        imdb_ids = st.text_input("Add titles by their IMDb ID", help="Separate multiple IDs with commas")
+        if imdb_ids:
+            add_imdb_ids(imdb_ids)
+        imdb_ids = ""
+        searched_title = st.text_input("Search title", key="search_title", value="")
+        if searched_title:
+            searched_title_add(searched_title)
+        searched_title = ""
+
+    st.session_state.watchlist = st_load_watchlist()
+
+    if st.session_state.watchlist:
+        watchlist_df()
+
+    selected_imdb_id = st.selectbox(
+        "View title from watchlist",
+        options=[None] + list(st.session_state.watchlist.keys()),
+        format_func=lambda x: "" if x is None else st.session_state.watchlist[x]["title"].title,
+    )
+    display_title(selected_imdb_id)
 
 
-selected_imdb_id = st.selectbox(
-    "View title from watchlist",
-    options=[None] + list(watchlist.keys()),
-    format_func=lambda x: "" if x is None else watchlist[x]["title"].title,
+auth_config = {
+    "usernames": {
+        "neno": {
+            "email": "",
+            "name": "neno",
+            "password": "$2b$12$KeaV6dBJsCfHksgDzXumhu/QvfCQ/2mc7Kfyrs9ce/X8VwGlcEfH2",
+        }
+    },
+}
+authenticator = stauth.Authenticate(
+    auth_config,
+    cookie_name="cookie_monster",
+    key="cookie_monster",
+    cookie_expiry_days=100,
 )
-display_title(selected_imdb_id)
 
-# try:
-# display_title(selected_imdb_id)
-# except Exception as e:
-# st.error(f"Error displaying title {e}")
-# st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
+name, authentication_status, username = authenticator.login("Login", "main")
+
+if authentication_status:
+    authenticator.logout("Logout", "main")
+    st.write(f"Welcome *{name}*")
+    main_app()
+elif authentication_status is False:
+    st.error("Username/password is incorrect")
+elif authentication_status is None:
+    st.warning("Please enter your username and password")
