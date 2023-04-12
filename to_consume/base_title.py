@@ -9,6 +9,7 @@ class BaseTitle:
         self.title = None
         self.type = None
         self.avg_imdb_rating = None
+        self.imdb_ratings_count = None
         self.streaming_platforms = None
         self.image_url = None
 

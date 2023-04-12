@@ -151,8 +151,10 @@ def display_title(selected_imdb_id):
             st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=st_update_watchlist)
             st.markdown("""---""")
             st.button("Remove from list", args=[selected_imdb_id], on_click=delete_from_list)
-        if title.trailer_url:
+        try:
             st.video(title.trailer_url)
+        except:
+            pass
 
 
 def main_app():
@@ -174,7 +176,7 @@ def main_app():
     selected_imdb_id = st.selectbox(
         "View title from watchlist",
         options=[None] + list(st.session_state.watchlist.keys()),
-        format_func=lambda x: "" if x is None else st.session_state.watchlist[x]["title"].title,
+        format_func=lambda x: "" if x is None else getattr(st.session_state.watchlist[x]["title"], "title", x),
     )
     display_title(selected_imdb_id)
 
