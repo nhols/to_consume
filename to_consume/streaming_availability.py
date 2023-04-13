@@ -4,7 +4,7 @@ from requests import request
 import os
 import json
 from to_consume.base_title import BaseTitle
-from to_consume.cache import persist_to_file
+from to_consume.cache import cache_db, persist_to_file
 from to_consume.utils import recurse_through_dict
 import logging
 
@@ -16,7 +16,7 @@ HEADERS = {"X-RapidAPI-Key": os.getenv("RAPID_API_KEY"), "X-RapidAPI-Host": "str
 class StreamingInfoTitle(BaseTitle):
     def __init__(self, imdb_id: str) -> None:
         super().__init__(imdb_id)
-        basic_resp = get_streaming_availability(self.imdb_id)
+        basic_resp = get_streaming_availability_gb(self.imdb_id)
         self.basic_resp = basic_resp if basic_resp else {}
         self._get_info()
         self._get_streaming_availability()
@@ -62,7 +62,11 @@ class StreamingInfoTitle(BaseTitle):
         return DataFrame(records, columns=["season", "episode", "imdb_rating", "imdb_ratings_count", "overview"])
 
 
-@persist_to_file("streaming_info_get_basic.json")
+@cache_db("streaming_info", "basic_gb")
+def get_streaming_availability_gb(imdb_id: str) -> dict | None:
+    return get_streaming_availability(imdb_id, "gb")
+
+
 def get_streaming_availability(imdb_id: str, country: str = "gb") -> dict | None:
     logging.info(f"Getting streaming availability for {imdb_id}")
     url = BASE_URL + "get/basic"

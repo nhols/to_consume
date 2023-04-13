@@ -2,8 +2,7 @@ from typing import Any
 import requests
 import os
 from to_consume.base_title import BaseTitle
-from to_consume.cache import persist_to_file
-from to_consume.utils import recurse_through_dict
+from to_consume.cache import cache_db
 
 BASE_URL = "https://moviesdatabase.p.rapidapi.com/"
 
@@ -31,13 +30,13 @@ class MoviesDatabaseTitle(BaseTitle):
         return {k: v for k, v in self.__dict__.items() if k not in ["title_info", "title_ratings", "image_url"]}
 
 
-@persist_to_file("moviesdatabase_title_info.json")
+@cache_db("moviesdatabase", "title_info")
 def get_title_info(imdb_id: str) -> dict | None:
     url = BASE_URL + f"titles/{imdb_id}"
     return get_movies_database_data(url)
 
 
-@persist_to_file("moviesdatabase_title_ratings.json")
+@cache_db("moviesdatabase", "title_ratings")
 def get_title_ratings(imdb_id: str) -> dict | None:
     url = BASE_URL + f"titles/{imdb_id}/ratings"
     return get_movies_database_data(url)
