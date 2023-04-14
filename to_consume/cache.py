@@ -3,26 +3,6 @@ import json
 from to_consume.utils import db_conn
 
 
-def persist_to_file(file_name):
-    def decorator(original_func):
-        try:
-            cache = json.load(open(file_name, "r"))
-        except (IOError, ValueError):
-            cache = {}
-
-        def new_func(param):
-            if param not in cache:
-                res = original_func(param)
-                if res is not None:
-                    cache[param] = res
-                    json.dump(cache, open(file_name, "w"))
-            return cache.get(param)
-
-        return new_func
-
-    return decorator
-
-
 def cache_db(api: str, endpoint: str):
     def decorator(original_func):
         def new_func(param):
@@ -45,7 +25,9 @@ def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
     with conn.cursor() as cur:
         cur.execute(f"SELECT response FROM cache WHERE api = %s AND endpoint = %s AND key = %s", (api, endpoint, param))
         res = cur.fetchone()
-    return res
+    if res:
+        return res[0]
+    return None
 
 
 def write_to_cache(api: str, endpoint: str, param: str, res: dict) -> None:

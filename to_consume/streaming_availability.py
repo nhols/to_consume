@@ -2,9 +2,8 @@ import logging
 from pandas import DataFrame
 from requests import request
 import os
-import json
 from to_consume.base_title import BaseTitle
-from to_consume.cache import cache_db, persist_to_file
+from to_consume.cache import cache_db
 from to_consume.utils import recurse_through_dict
 import logging
 

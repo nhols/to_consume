@@ -2,7 +2,6 @@ from unittest import result
 import pandas as pd
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
-from pprint import pprint
 
 BASE_URL = "https://www.imdb.com/"
 
@@ -19,9 +18,6 @@ class IMDBSearch:
         self.search_term = search_term
         self.search_soup = self.get_search_soup()
         self.hrefs = self.get_search_result_hrefs()
-        # self.get_search_results()
-        # if self.hrefs:
-        #     self._get_listing_info()
 
     def get_search_soup(self) -> BeautifulSoup:
         return get_soup(BASE_URL + "find/?q=" + self.search_term.replace(" ", "%20"))
@@ -73,14 +69,3 @@ class IMDBListing:
         components = self.href.split("/")
         self.imdb_id = components[2]
         self.imdb_type = components[1]
-
-
-# t = IMDBSearch("Alice in Borderland")
-# t2 = IMDBScraper("The whale")
-# t2 = IMDBScraper("Jessica jones")
-# t2._get_listing_info()
-# x = t2.
-# for xx in x[0]:
-#     print(xx.text)
-#     print(xx.get("href"))
-#     print(xx.get("src"))
