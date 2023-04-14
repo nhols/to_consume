@@ -2,6 +2,12 @@ from to_consume.streamlit.app import main_app
 from to_consume.streamlit.login import get_authenticator, get_user_id
 import streamlit as st
 
+st.set_page_config(
+    page_title="Watchlist",
+    page_icon="🎬",
+    layout="wide",
+)
+
 authenticator = get_authenticator()
 name, authentication_status, username = authenticator.login("Login", "main")
 

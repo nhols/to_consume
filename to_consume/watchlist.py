@@ -9,7 +9,7 @@ from to_consume.utils import db_conn
 class WatchList:
     def __init__(self, user_id: int):
         self.user_id: int = user_id
-        self.watchlist: dict = self.load_whole_watchlist(user_id)
+        self.watchlist: dict = self.load_whole_watchlist()
 
     def load_whole_watchlist(self) -> dict:
         return self.load_watchlist(self.user_id, None)
@@ -17,14 +17,23 @@ class WatchList:
     @staticmethod
     def load_watchlist(user_id: int, imdb_id: str | None) -> dict:
         query = "SELECT imdb_id, watched, rating, created_at, updated_at FROM watchlist WHERE user_id = %s"
+        params = (user_id,)
         if imdb_id is not None:
             query += " AND imdb_id = %s"
+            params += (imdb_id,)
+
         conn = db_conn()
         with conn.cursor() as cursor:
-            cursor.execute(query, (user_id, imdb_id))
+            cursor.execute(query, params)
             res = cursor.fetchall()
         return {
-            imdb_id: {"watched": watched, "rating": rating, "created": created_at, "last_updated": updated_at}
+            imdb_id: {
+                "watched": watched,
+                "rating": rating,
+                "created": created_at,
+                "last_updated": updated_at,
+                "title": Title(imdb_id),
+            }
             for imdb_id, watched, rating, created_at, updated_at in res
         }
 
@@ -38,8 +47,13 @@ class WatchList:
         conn = db_conn()
         with conn.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO watchlist (self.user_id, imdb_id, watched, rating) VALUES (%s, %s, %s, %s);",
-                (self.user_id, imdb_id, watched, rating),
+                "INSERT INTO watchlist (user_id, imdb_id, watched, rating) VALUES (%s, %s, %s, %s);",
+                (
+                    self.user_id,
+                    imdb_id,
+                    watched,
+                    rating,
+                ),
             )
             conn.commit()
 
@@ -73,7 +87,12 @@ class WatchList:
         with conn.cursor() as cursor:
             cursor.execute(
                 "UPDATE watchlist SET watched = %s, rating = %s WHERE user_id = %s AND imdb_id = %s;",
-                (watched, rating, self.user_id, imdb_id),
+                (
+                    watched,
+                    rating,
+                    self.user_id,
+                    imdb_id,
+                ),
             )
             conn.commit()
 

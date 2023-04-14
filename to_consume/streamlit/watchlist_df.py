@@ -4,7 +4,9 @@ from pandas import DataFrame
 
 def watchlist_df():
     watchlist = st.session_state.watchlist
-    records = [x["title"].get_title_df_record() | {"last_updated": x["last_updated"]} for x in watchlist.values()]
+    records = [
+        x["title"].get_title_df_record() | {"last_updated": x["last_updated"]} for x in watchlist.watchlist.values()
+    ]
     df = (
         DataFrame.from_records(records, index="imdb_id")
         .sort_values("last_updated", ascending=False)

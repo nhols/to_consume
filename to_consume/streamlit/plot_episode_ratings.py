@@ -5,6 +5,7 @@ import streamlit as st
 
 def plot_episode_ratings(title: Title):
     df = title.get_seasons_df()
+    df.loc[df["imdb_rating"] == 0, "imdb_rating"] = None
     if not df.empty:
         fig = px.line(
             df,

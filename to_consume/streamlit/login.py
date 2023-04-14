@@ -5,7 +5,7 @@ import streamlit_authenticator as stauth
 def get_auth_config():
     conn = db_conn()
     with conn.cursor() as cur:
-        cur.execute("SELECT * FROM users")
+        cur.execute("SELECT username, password FROM users")
         config = cur.fetchall()
     return {"usernames": {name: {"email": "", "name": name, "password": password} for name, password in config}}
 

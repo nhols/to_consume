@@ -1,11 +1,11 @@
 import streamlit as st
 
-from to_consume.streamlit import plot_episode_ratings
+from to_consume.streamlit.plot_episode_ratings import plot_episode_ratings
 
 
 def display_title(selected_imdb_id):
     if selected_imdb_id:
-        selected_title = st.session_state.watchlist[selected_imdb_id]
+        selected_title = st.session_state.watchlist.watchlist[selected_imdb_id]
         title = selected_title["title"]
         plot_episode_ratings(title)
         st.title(title.title)

@@ -13,12 +13,14 @@ def main_app():
     with st.sidebar:
         search_titles()
 
-    if st.session_state.watchlist:
+    if st.session_state.watchlist.watchlist:
         watchlist_df()
 
     selected_imdb_id = st.selectbox(
         "View title from watchlist",
-        options=[None] + list(st.session_state.watchlist.keys()),
-        format_func=lambda x: "" if x is None else getattr(st.session_state.watchlist[x]["title"], "title", x),
+        options=[None] + list(st.session_state.watchlist.watchlist.keys()),
+        format_func=lambda x: ""
+        if x is None
+        else getattr(st.session_state.watchlist.watchlist[x]["title"], "title", x),
     )
     display_title(selected_imdb_id)

@@ -4,3 +4,4 @@ __pycache__
 *.html
 *.json
 secrets.toml
+credentials_init.sql

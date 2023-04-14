@@ -45,7 +45,7 @@ def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
     with conn.cursor() as cur:
         cur.execute(f"SELECT response FROM cache WHERE api = %s AND endpoint = %s AND key = %s", (api, endpoint, param))
         res = cur.fetchone()
-    return res[0]
+    return res
 
 
 def write_to_cache(api: str, endpoint: str, param: str, res: dict) -> None:
@@ -53,6 +53,6 @@ def write_to_cache(api: str, endpoint: str, param: str, res: dict) -> None:
     conn = db_conn()
     with conn.cursor() as cur:
         cur.execute(
-            f"INSERT INOT cache(api, endpoint, key, response) VALUES(%s,%s,%s,%s)", (api, endpoint, param, res_str)
+            f"INSERT INTO cache(api, endpoint, key, response) VALUES(%s,%s,%s,%s)", (api, endpoint, param, res_str)
         )
         conn.commit()
