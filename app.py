@@ -53,7 +53,7 @@ def st_add_to_list(imdb_id: str) -> None:
         st.warning(f"{imdb_id} already in the list")
         return None
     st.success(f"Added {imdb_id} to the watchlist")
-    st_load_watchlist.clear()  # had to manually create ~/.streamlit/cache dir to get this working - bug?
+    st_load_watchlist.clear()
 
 
 def st_update_watchlist(imdb_id: str, watched: bool, rating: int) -> None:
