@@ -1,6 +1,9 @@
 import json
+import logging
 
 from to_consume.utils import db_conn
+
+logger = logging.getLogger(__name__)
 
 
 def cache_db(api: str, endpoint: str):
@@ -26,11 +29,13 @@ def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
         cur.execute(f"SELECT response FROM cache WHERE api = %s AND endpoint = %s AND key = %s", (api, endpoint, param))
         res = cur.fetchone()
     if res:
+        logging.info(f"cached value fetched for {api}, {endpoint}, {param}")
         return res[0]
     return None
 
 
 def write_to_cache(api: str, endpoint: str, param: str, res: dict) -> None:
+    logging.info(f"Writing retrieved result for {api}, {endpoint}, {param}")
     res_str = json.dumps(res)
     conn = db_conn()
     with conn.cursor() as cur:

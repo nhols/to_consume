@@ -1,9 +1,8 @@
 import logging
-from pandas import DataFrame
 from requests import request
 import os
-from to_consume.base_title import BaseTitle
-from to_consume.cache import cache_db
+from to_consume.base_title import BaseTitle, Episode, Season
+from to_consume.cache import cache_db, fetch_from_cache, write_to_cache
 from to_consume.utils import recurse_through_dict
 import logging
 
@@ -29,6 +28,7 @@ class StreamingInfoTitle(BaseTitle):
         self.set_attr_from_dict_if_exists(self.basic_resp, "avg_imdb_rating", ["imdbRating"], lambda x: x / 10)
         self.set_attr_from_dict_if_exists(self.basic_resp, "imdb_ratings_count", ["imdbVoteCount"])
         self.set_attr_from_dict_if_exists(self.basic_resp, "trailer_url", ["youtubeTrailerVideoLink"])
+        self._set_seasons()
 
     def _get_streaming_availability(self):
         streaming_info = recurse_through_dict(self.basic_resp, ["streamingInfo", "gb"])
@@ -41,27 +41,59 @@ class StreamingInfoTitle(BaseTitle):
                 self.streaming_links[platform] = watchlink
                 self.streaming_platforms = [] if not streaming_info else list(streaming_info.keys())
 
-    def get_seasons_df(self) -> DataFrame:
-        records = []
-        for season in self.basic_resp.get("seasons", []):
-            season_title = season.get("title")
-            episodes = season.get("episodes")
-            if episodes:
-                for episode in episodes:
-                    records.append(
-                        (
-                            season_title,
-                            episode.get("title"),
-                            episode.get("imdbRating") / 10,
-                            episode.get("imdbVoteCount"),
-                            episode.get("overview"),
-                        )
+    def _set_seasons(self) -> None:
+        self.seasons = []
+        for number, season in enumerate(self.basic_resp.get("seasons", []), start=1):
+            season_ = Season(
+                number=number,
+                title=season.get("title"),
+                episodes=self._get_episodes(season),
+            )
+            self.seasons.append(season_)
+
+    def _get_episodes(self, season: dict) -> list[Episode]:
+        episodes = season.get("episodes")
+        episodes_ = []
+        if episodes:
+            for episode in episodes:
+                episodes_.append(
+                    Episode(
+                        imdb_id=episode.get("imdbId"),
+                        title=episode.get("title"),
+                        imdb_rating=episode.get("imdbRating") / 10,
+                        imdb_ratings_count=episode.get("imdbVoteCount"),
+                        overview=episode.get("overview"),
                     )
+                )
+        return episodes_
 
-        return DataFrame(records, columns=["season", "episode", "imdb_rating", "imdb_ratings_count", "overview"])
+
+def cache_db_streaming_info(api: str, endpoint: str):
+    def decorator(original_func):
+        def new_func(param):
+            res = fetch_from_cache(api, endpoint, param)
+            if res is not None:
+                return res
+
+            res = original_func(param)
+            if res is not None:
+                write_to_cache(api, endpoint, param, res)
+                write_episodes_to_cache(api, endpoint, res)
+            return res
+
+        return new_func
+
+    return decorator
 
 
-@cache_db("streaming_info", "basic_gb")
+def write_episodes_to_cache(api: str, endpoint: str, res: dict) -> None:
+    for season in res.get("seasons", []):
+        for episode in season.get("episodes", []):
+            if episode["imdbId"]:
+                write_to_cache(api, endpoint, episode["imdbId"], episode)
+
+
+@cache_db_streaming_info("streaming_info", "basic_gb")
 def get_streaming_availability_gb(imdb_id: str) -> dict | None:
     return get_streaming_availability(imdb_id, "gb")
 

@@ -1,4 +1,6 @@
+from __future__ import annotations
 from urllib.parse import quote
+from to_consume.base_title import Episode
 
 from to_consume.movies_database import MoviesDatabaseTitle
 from to_consume.streaming_availability import StreamingInfoTitle
@@ -8,6 +10,7 @@ class Title(MoviesDatabaseTitle, StreamingInfoTitle):
     def __init__(self, imdb_id: str) -> None:
         super().__init__(imdb_id)
         self._set_urls()
+        self._update_episodes()
 
     def _set_urls(self) -> None:
         search_term = self.imdb_id if self.title is None else quote(self.title)
@@ -23,3 +26,19 @@ class Title(MoviesDatabaseTitle, StreamingInfoTitle):
             "imdb_rating": self.avg_imdb_rating,
             "streaming_platforms": self.streaming_platforms,
         }
+
+    def _update_episodes(self) -> list[Episode]:
+        for season in self.seasons:
+            episode_ids = [episode.imdb_id for episode in season.episodes]
+            season.episodes.clear()
+            for episode_id in episode_ids:
+                episode_title = Title(episode_id)
+                season.episodes.append(
+                    Episode(
+                        imdb_id=episode_title.imdb_id,
+                        title=episode_title.title,
+                        imdb_rating=episode_title.avg_imdb_rating,
+                        imdb_ratings_count=episode_title.imdb_ratings_count,
+                        overview=episode_title.overview,
+                    )
+                )
