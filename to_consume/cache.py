@@ -1,6 +1,6 @@
 import json
 import logging
-
+import streamlit as st
 from to_consume.utils import db_conn
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,29 @@ def cache_db(api: str, endpoint: str):
     return decorator
 
 
+@st.cache_data
+def fetch_entire_cache():
+    conn = db_conn()
+    with conn.cursor() as cur:
+        cur.execute(f"SELECT api, endpoint, key, response FROM cache")
+        res = cur.fetchall()
+    cache_dict = {}
+    for api, endpoint, param, response in res:
+        cache_key = (api, endpoint, param)
+        cache_dict[cache_key] = response
+    return cache_dict
+
+
 def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
+    cache = fetch_entire_cache()
+    res = cache.get((api, endpoint, param))
+    if res:
+        logging.info(f"cached value fetched for {api}, {endpoint}, {param}")
+        return res[0]
+    return None
+
+
+def _fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
     conn = db_conn()
     with conn.cursor() as cur:
         cur.execute(f"SELECT response FROM cache WHERE api = %s AND endpoint = %s AND key = %s", (api, endpoint, param))
