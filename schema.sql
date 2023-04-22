@@ -31,8 +31,8 @@ UPDATE
 
 CREATE TABLE title_episodes (
     id SERIAL PRIMARY KEY,
-    title_imdb_id TEXT NOT NULL REFERENCES titles(imdb_id) ON DELETE CASCADE,
     episode_imdb_id TEXT NOT NULL UNIQUE,
+    title_imdb_id TEXT NOT NULL REFERENCES titles(imdb_id) ON DELETE CASCADE,
     season_number SMALLINT DEFAULT NULL,
     episode_number SMALLINT NOT NULL,
     title TEXT,
