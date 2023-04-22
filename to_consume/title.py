@@ -2,11 +2,11 @@ from __future__ import annotations
 from urllib.parse import quote
 from to_consume.base_title import Episode
 
-from to_consume.movies_database import MoviesDatabaseTitle
+from to_consume.movies_database import MoviesDatabaseBaseTitle
 from to_consume.streaming_availability import StreamingInfoTitle
 
 
-class Title(MoviesDatabaseTitle, StreamingInfoTitle):
+class Title(MoviesDatabaseBaseTitle, StreamingInfoTitle):
     def __init__(self, imdb_id: str) -> None:
         super().__init__(imdb_id)
         self._set_urls()

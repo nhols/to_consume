@@ -1,3 +1,4 @@
+from venv import logger
 from to_consume.exceptions import ItemAlreadyInListError, ItemNotInListError
 from to_consume.title import Title
 from to_consume.utils import db_conn
@@ -23,13 +24,20 @@ class WatchList:
         with conn.cursor() as cursor:
             cursor.execute(query, params)
             res = cursor.fetchall()
+
+        def catch(x):
+            try:
+                return Title(x)
+            except:
+                logger.error(f"Error loading title {x}")
+
         return {
             imdb_id: {
                 "watched": watched,
                 "rating": rating,
                 "created": created_at,
                 "last_updated": updated_at,
-                "title": Title(imdb_id),
+                "title": catch(imdb_id),
             }
             for imdb_id, watched, rating, created_at, updated_at in res
         }

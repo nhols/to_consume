@@ -28,7 +28,7 @@ class StreamingInfoTitle(BaseTitle):
         self.set_attr_from_dict_if_exists(self.basic_resp, "avg_imdb_rating", ["imdbRating"], lambda x: x / 10)
         self.set_attr_from_dict_if_exists(self.basic_resp, "imdb_ratings_count", ["imdbVoteCount"])
         self.set_attr_from_dict_if_exists(self.basic_resp, "trailer_url", ["youtubeTrailerVideoLink"])
-        self._set_seasons()
+        self._set_seasons_sa()
 
     def _get_streaming_availability(self):
         streaming_info = recurse_through_dict(self.basic_resp, ["streamingInfo", "gb"])
@@ -41,17 +41,17 @@ class StreamingInfoTitle(BaseTitle):
                 self.streaming_links[platform] = watchlink
                 self.streaming_platforms = [] if not streaming_info else list(streaming_info.keys())
 
-    def _set_seasons(self) -> None:
+    def _set_seasons_sa(self) -> None:
         self.seasons = []
         for number, season in enumerate(self.basic_resp.get("seasons", []), start=1):
             season_ = Season(
                 number=number,
                 title=season.get("title"),
-                episodes=self._get_episodes(season),
+                episodes=self._get_episodes_sa(season),
             )
             self.seasons.append(season_)
 
-    def _get_episodes(self, season: dict) -> list[Episode]:
+    def _get_episodes_sa(self, season: dict) -> list[Episode]:
         episodes = season.get("episodes")
         episodes_ = []
         if episodes:
@@ -100,6 +100,7 @@ def get_streaming_availability_gb(imdb_id: str) -> dict | None:
 
 def get_streaming_availability(imdb_id: str, country: str = "gb") -> dict | None:
     logging.info(f"Getting streaming availability for {imdb_id}")
+    return
     url = BASE_URL + "get/basic"
     querystring = {"country": country, "imdb_id": imdb_id}
     response = request("GET", url, headers=HEADERS, params=querystring)

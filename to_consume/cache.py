@@ -2,6 +2,7 @@ import json
 import logging
 import streamlit as st
 from to_consume.utils import db_conn
+from psycopg2.errors import UniqueViolation
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +24,9 @@ def cache_db(api: str, endpoint: str):
     return decorator
 
 
-@st.cache_data
+@st.cache_resource
 def fetch_entire_cache():
+    logger.info("Fetching entire cache")
     conn = db_conn()
     with conn.cursor() as cur:
         cur.execute(f"SELECT api, endpoint, key, response FROM cache")
@@ -39,9 +41,9 @@ def fetch_entire_cache():
 def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
     cache = fetch_entire_cache()
     res = cache.get((api, endpoint, param))
-    if res:
+    if res is not None:
         logging.info(f"cached value fetched for {api}, {endpoint}, {param}")
-        return res[0]
+        return res
     return None
 
 
@@ -61,7 +63,11 @@ def write_to_cache(api: str, endpoint: str, param: str, res: dict) -> None:
     res_str = json.dumps(res)
     conn = db_conn()
     with conn.cursor() as cur:
-        cur.execute(
-            f"INSERT INTO cache(api, endpoint, key, response) VALUES(%s,%s,%s,%s)", (api, endpoint, param, res_str)
-        )
-        conn.commit()
+        try:
+            cur.execute(
+                f"INSERT INTO cache(api, endpoint, key, response) VALUES(%s,%s,%s,%s)", (api, endpoint, param, res_str)
+            )
+            conn.commit()
+        except UniqueViolation:
+            logging.warning(f"Duplicate entry for {api}, {endpoint}, {param}, cache could be out of date")
+            conn.rollback()

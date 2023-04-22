@@ -7,12 +7,13 @@ from pydantic import BaseModel, validator
 
 
 class BaseTitle:
-    def __init__(self, imdb_id: str) -> None:
+    def __init__(self, imdb_id: str, responses:dict) -> None:
         self.imdb_id = imdb_id
         self.title = None
         self.type = None
         self.avg_imdb_rating = None
         self.imdb_ratings_count = None
+        self.date_released = None
         self.streaming_platforms = None
         self.image_url = None
         self.seasons: list[Season] = []
@@ -22,6 +23,8 @@ class BaseTitle:
         self, d: dict, attr_name: str, keys: list[str], preprocess_function: Callable | None = None
     ) -> None:
         value = recurse_through_dict(d, keys)
+        if preprocess_function is not None and value is not None:
+            value = preprocess_function(value)
         self.set_attr_if_exists(attr_name, value)
 
     def set_attr_if_exists(self, attr_name: str, attr_value: Any, preprocess_function: Callable | None = None) -> None:
@@ -57,7 +60,7 @@ class Episode(BaseModel):
     imdb_ratings_count: int = 0
     overview: str | None = None
 
-    @validator("imdb_ratings_count", pre=True)
+    @validator("imdb_ratings_count", pre=True, allow_reuse=True)
     def process_imdb_ratings_count(cls, imdb_ratings_count) -> int:
         if imdb_ratings_count is None:
             return 0

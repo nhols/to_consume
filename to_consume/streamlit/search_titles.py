@@ -2,7 +2,7 @@ import streamlit as st
 from to_consume.exceptions import ItemAlreadyInListError
 
 from to_consume.imdb import IMDBListing, IMDBSearch
-from to_consume.movies_database import MoviesDatabaseTitle
+from to_consume.movies_database import MoviesDatabaseBaseTitle
 
 
 def searched_title_add(searched_title: str):
@@ -11,7 +11,7 @@ def searched_title_add(searched_title: str):
         listing = IMDBListing(href)
         if listing.imdb_type == "title":
             st.write(f"[🔗]({listing.url})")
-            listing_info = MoviesDatabaseTitle(listing.imdb_id)
+            listing_info = MoviesDatabaseBaseTitle(listing.imdb_id)
             st.json(listing_info.title_info, expanded=False)
             if listing_info.image_url:
                 st.image(listing_info.image_url, width=200)

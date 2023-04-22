@@ -3,7 +3,7 @@ import sys
 sys.path.append("/home/neil/repos/to_consume")
 from to_consume.watchlist import add_to_list
 from to_consume.imdb import IMDBListing, IMDBSearch
-from to_consume.movies_database import MoviesDatabaseTitle
+from to_consume.movies_database import MoviesDatabaseBaseTitle
 
 titles = [
     "alice in borderland",
@@ -122,7 +122,7 @@ def get_titles():
             search_res = IMDBSearch(title)
             if search_res.hrefs:
                 first_res = IMDBListing(search_res.hrefs[0])
-                listing = MoviesDatabaseTitle(first_res.imdb_id)
+                listing = MoviesDatabaseBaseTitle(first_res.imdb_id)
                 add_to_list(listing)
                 print(f"Added {title}")
             else:
@@ -134,7 +134,7 @@ def get_titles():
 def get_imdb_ids():
     for imdb_id in imdb_ids:
         try:
-            listing = MoviesDatabaseTitle(imdb_id)
+            listing = MoviesDatabaseBaseTitle(imdb_id)
             add_to_list(listing.imdb_id)
             print(f"Added {imdb_id}")
         except Exception as e:
