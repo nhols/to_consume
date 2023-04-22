@@ -1,3 +1,4 @@
+import logging
 from to_consume.streamlit.app import main_app
 from to_consume.streamlit.login import get_authenticator, get_user_id
 import streamlit as st
@@ -5,7 +6,9 @@ from streamlit_profiler import Profiler
 
 from to_consume.utils import db_conn
 
-# TODO seasons
+# TODO split out concept of episode from seruies with some shared base attributes
+# TODO async requests
+# TODO async db write/read?
 # TODO dedicated watchlist table
 # TODO refresh imdb ratings
 # TODO streaming platform icons with links
@@ -13,10 +16,16 @@ from to_consume.utils import db_conn
 # TODO readlist
 st.set_page_config(
     page_title="Watchlist",
-    page_icon="🎬",
+    page_icon="🍿",
     layout="wide",
 )
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("logs")],
+)
 authenticator = get_authenticator()
 name, authentication_status, username = authenticator.login("Login", "main")
 
