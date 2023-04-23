@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Any, Callable
 
 from pandas import DataFrame
@@ -6,7 +7,7 @@ from to_consume.utils import recurse_through_dict
 from pydantic import BaseModel, validator
 
 
-class BaseTitle:
+class BaseContent:
     def __init__(self, imdb_id: str, responses:dict) -> None:
         self.imdb_id = imdb_id
         self.title = None
@@ -52,6 +53,18 @@ class BaseTitle:
             columns=["season", "episode", "imdb_rating", "imdb_ratings_count", "overview"],
         )
 
+class BaseTitle:
+    def __init__(self, imdb_id: str, responses:dict) -> None:
+        pass
+
+    def append_episode_responses(self, episode_imdb_ids:list[str], responses:defaultdict[dict]) -> None:
+        pass
+
+class BaseEpisode:
+    def __init__(self, imdb_id: str, responses:dict) -> None:
+        self.imdb_id = imdb_id
+        self.season_number = None
+        self.episode_number = None
 
 class Episode(BaseModel):
     imdb_id: str

@@ -1,7 +1,7 @@
 import logging
 from requests import request
 import os
-from to_consume.base_title import BaseTitle, Episode, Season
+from to_consume.base_title import BaseContent, Episode, Season
 from to_consume.cache import cache_db, fetch_from_cache, write_to_cache
 from to_consume.utils import recurse_through_dict
 import logging
@@ -11,7 +11,7 @@ BASE_URL = "https://streaming-availability.p.rapidapi.com/v2/"
 HEADERS = {"X-RapidAPI-Key": os.getenv("RAPID_API_KEY"), "X-RapidAPI-Host": "streaming-availability.p.rapidapi.com"}
 
 
-class StreamingInfoTitle(BaseTitle):
+class StreamingInfoTitle(BaseContent):
     def __init__(self, imdb_id: str) -> None:
         super().__init__(imdb_id)
         basic_resp = get_streaming_availability_gb(self.imdb_id)

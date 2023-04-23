@@ -3,7 +3,7 @@ from typing import Any, DefaultDict
 from venv import logger
 import requests
 import os
-from to_consume.base_title import BaseTitle, Episode, Season
+from to_consume.base_title import BaseContent, Episode, Season
 from to_consume.cache import cache_db
 from to_consume.utils import recurse_through_dict
 
@@ -12,7 +12,7 @@ BASE_URL = "https://moviesdatabase.p.rapidapi.com/"
 HEADERS = {"X-RapidAPI-Key": os.getenv("RAPID_API_KEY"), "X-RapidAPI-Host": "moviesdatabase.p.rapidapi.com"}
 
 
-class MoviesDatabaseBaseTitle(BaseTitle):
+class MoviesDatabaseBaseTitle(BaseContent):
     def __init__(self, imdb_id: str) -> None:
         super().__init__(imdb_id)
         self.get_title_info()
