@@ -1,10 +1,13 @@
 from collections import defaultdict
+import logging
 from typing import Any, Callable
 
 from pandas import DataFrame
 
 from to_consume.utils import recurse_through_dict
 from pydantic import BaseModel, validator
+
+logger = logging.getLogger(__name__)
 
 
 class BaseContent:
@@ -24,7 +27,10 @@ class BaseContent:
     ) -> None:
         value = recurse_through_dict(d, keys)
         if preprocess_function is not None and value is not None:
-            value = preprocess_function(value)
+            try:
+                value = preprocess_function(value)
+            except Exception as e:
+                logger.error(f"Error in preprocess_function for {self.imdb_id}, {attr_name}: {e}")
         self.set_attr_if_exists(attr_name, value)
 
     def set_attr_if_exists(self, attr_name: str, attr_value: Any, preprocess_function: Callable | None = None) -> None:

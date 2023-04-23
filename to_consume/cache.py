@@ -1,7 +1,8 @@
 import json
 import logging
 import streamlit as st
-from to_consume.utils import db_conn
+from to_consume.streamlit.db_utils import db_conn
+
 from psycopg2.errors import UniqueViolation
 
 logger = logging.getLogger(__name__)

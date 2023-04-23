@@ -26,7 +26,9 @@ class MoviesDbContent(BaseContent):
 
 
 class MoviesDbTitle(BaseTitle, MoviesDbContent):
-    def __init__(self, imdb_id: str, responses: dict) -> None:
+    def __init__(self, imdb_id: str, responses: dict | None = None) -> None:
+        if responses is None:
+            responses = {}
         new_responses = self.get_title_responses_mdb(imdb_id)
         responses.update(new_responses)
         super().__init__(imdb_id, responses)

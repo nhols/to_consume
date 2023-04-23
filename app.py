@@ -4,7 +4,6 @@ from to_consume.streamlit.login import get_authenticator, get_user_id
 import streamlit as st
 from streamlit_profiler import Profiler
 
-from to_consume.utils import db_conn
 
 # TODO split out concept of episode from seruies with some shared base attributes
 # TODO async requests
@@ -31,7 +30,6 @@ name, authentication_status, username = authenticator.login("Login", "main")
 
 if authentication_status:
     authenticator.logout("Logout", "main")
-    st.write(f"Welcome *{name}*")
     st.session_state.user_id = get_user_id(username)
     with Profiler():
         main_app()

@@ -1,15 +1,9 @@
 import streamlit as st
 from pandas import DataFrame
 
+from to_consume.watchlist import WatchList
 
-def watchlist_df():
-    watchlist = st.session_state.watchlist
-    records = [
-        x["title"].get_title_df_record() | {"last_updated": x["last_updated"]} for x in watchlist.watchlist.values()
-    ]
-    df = (
-        DataFrame.from_records(records, index="imdb_id")
-        .sort_values("last_updated", ascending=False)
-        .drop("last_updated", axis=1)
-    )
+
+def watchlist_df(watchlist: WatchList):
+    df = DataFrame.from_records(list(watchlist.watchlist_titles.values()))
     st.dataframe(df, use_container_width=True)

@@ -36,10 +36,11 @@ class StreamingInfoTitle(BaseTitle, StreamingInfoContent):
         episode_responses = defaultdict(dict)
         for season_number, season in enumerate(response.get("seasons", []), start=1):
             for episode_number, episode in enumerate(season.get("episodes", []), start=1):
-                episode_responses[episode["imdbId"]].update(
-                    sa_basic=episode,
-                    sa_season_ep_number={"season_number": season_number, "episode_number": episode_number},
-                )
+                if episode.get("imdbId"):
+                    episode_responses[episode["imdbId"]].update(
+                        sa_basic=episode,
+                        sa_season_ep_number={"season_number": season_number, "episode_number": episode_number},
+                    )
         return episode_responses
 
 

@@ -1,4 +1,4 @@
-from to_consume.utils import db_conn
+from to_consume.streamlit.db_utils import db_conn
 import streamlit_authenticator as stauth
 
 

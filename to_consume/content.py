@@ -4,6 +4,7 @@ from urllib.parse import quote
 
 from to_consume.movies_db.content import MoviesDbEpisode, MoviesDbTitle
 from to_consume.streaming_availability.content import StreamingInfoEpisode, StreamingInfoTitle
+from to_consume.utils import insert_dicts
 
 
 class Title(MoviesDbTitle, StreamingInfoTitle):
@@ -30,9 +31,9 @@ class Title(MoviesDbTitle, StreamingInfoTitle):
             "imdb_id": self.imdb_id,
             "title": self.title,
             "date_released": self.date_released,
-            "title_type": self.title_type,
-            "imdb_rating": self.imdb_rating,
-            "imdb_rating_count": self.imdb_rating_count,
+            "title_type": self.type,
+            "imdb_rating": self.avg_imdb_rating,
+            "imdb_rating_count": self.imdb_ratings_count,
         }
 
     def episode_db_records(self) -> dict:
@@ -55,6 +56,15 @@ class Episode(MoviesDbEpisode, StreamingInfoEpisode):
             "episode_number": self.episode_number,
             "title": self.title,
             "date_released": self.date_released,
-            "imdb_rating": self.imdb_rating,
-            "imdb_rating_count": self.imdb_rating_count,
+            "imdb_rating": self.avg_imdb_rating,
+            "imdb_rating_count": self.imdb_ratings_count,
         }
+
+
+def write_title_records(conn, title: Title) -> None:
+    title_records = title.title_db_record()
+    insert_dicts(conn, "titles", [title_records])
+
+    ep_records = title.episode_db_records()
+    if ep_records:
+        insert_dicts(conn, "title_episodes", ep_records)

@@ -20,7 +20,7 @@ CREATE TABLE titles (
     date_released DATE,
     title_type TEXT,
     imdb_rating SMALLINT,
-    imdb_rating_count SMALLINT,
+    imdb_rating_count INT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -33,14 +33,15 @@ CREATE TABLE title_episodes (
     id SERIAL PRIMARY KEY,
     episode_imdb_id TEXT NOT NULL UNIQUE,
     title_imdb_id TEXT NOT NULL REFERENCES titles(imdb_id) ON DELETE CASCADE,
-    season_number SMALLINT DEFAULT NULL,
+    season_number SMALLINT NOT NULL,
     episode_number SMALLINT NOT NULL,
     title TEXT,
     date_released DATE,
     imdb_rating SMALLINT,
-    imdb_rating_count SMALLINT,
+    imdb_rating_count INT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (title_imdb_id, season_number, episode_number)
 );
 
 CREATE TRIGGER title_episodes_updated_at_refresh BEFORE
@@ -87,3 +88,13 @@ CREATE TABLE cache (
 );
 
 CREATE INDEX cache_api_endpoint_key_idx ON cache (api, endpoint, key);
+
+ALTER TABLE
+    titles
+ALTER COLUMN
+    imdb_rating_count TYPE INT;
+
+ALTER TABLE
+    title_episodes
+ALTER COLUMN
+    imdb_rating_count TYPE INT;

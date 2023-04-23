@@ -1,52 +1,63 @@
-from venv import logger
 from to_consume.exceptions import ItemAlreadyInListError, ItemNotInListError
-from to_consume.content import Title
-from to_consume.utils import db_conn
+from to_consume.content import Title, write_title_records
+from to_consume.streamlit.db_utils import db_conn
+
+from psycopg2.extras import RealDictCursor
 
 
 class WatchList:
     def __init__(self, user_id: int):
         self.user_id: int = user_id
         self.watchlist: dict = self.load_whole_watchlist()
+        self.watchlist_titles: dict = self.load_watchlist_titles()
 
     def load_whole_watchlist(self) -> dict:
-        return self.load_watchlist(self.user_id, None)
+        return self.load_watchlist(None)
 
-    @staticmethod
-    def load_watchlist(user_id: int, imdb_id: str | None) -> dict:
+    def load_watchlist(self, imdb_id: str | None) -> dict:
         query = "SELECT imdb_id, watched, rating, created_at, updated_at FROM watchlist WHERE user_id = %s"
-        params = (user_id,)
+        params = (self.user_id,)
         if imdb_id is not None:
             query += " AND imdb_id = %s"
             params += (imdb_id,)
 
         conn = db_conn()
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(query, params)
             res = cursor.fetchall()
+        return self._key_by_imdb_id(res)
 
-        def catch(x):
-            try:
-                return Title(x)
-            except:
-                logger.error(f"Error loading title {x}")
+    def load_watchlist_titles(self) -> dict:
+        conn = db_conn()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    titles.*
+                FROM
+                    titles
+                    INNER JOIN watchlist ON watchlist.imdb_id = titles.imdb_id
+                    AND user_id = 1;
+                """,
+                (self.user_id,),
+            )
+            res = cursor.fetchall()
+        return self._key_by_imdb_id(res)
 
-        return {
-            imdb_id: {
-                "watched": watched,
-                "rating": rating,
-                "created": created_at,
-                "last_updated": updated_at,
-                "title": catch(imdb_id),
-            }
-            for imdb_id, watched, rating, created_at, updated_at in res
-        }
+    @staticmethod
+    def _key_by_imdb_id(res: dict) -> dict:
+        return {result["imdb_id"]: result for result in res}
 
     def add_to_watchlist(self, imdb_id: str) -> None:
         if imdb_id in self.watchlist:
             raise ItemAlreadyInListError(f"{imdb_id} is already in the watchlist")
+
+        conn = db_conn()
+        title = Title(imdb_id)
+        write_title_records(conn, title)
+
         self._insert_db(imdb_id, False, None)
-        self.watchlist |= self.load_watchlist(self.user_id, imdb_id)
+        self.watchlist |= self.load_watchlist(imdb_id)
 
     def _insert_db(self, imdb_id: str, watched: bool, rating: int) -> None:
         conn = db_conn()
@@ -100,6 +111,3 @@ class WatchList:
                 ),
             )
             conn.commit()
-
-    def __reduce__(self):
-        return WatchList, (self.user_id,)
