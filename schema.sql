@@ -1,5 +1,5 @@
 CREATE
-OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $ $ BEGIN NEW.modified = now();
+OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $ $ BEGIN NEW.updated_at = now();
 
 RETURN NEW;
 
@@ -63,7 +63,7 @@ CREATE TABLE watchlist_seasons (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     imdb_id TEXT NOT NULL,
-    season_number SMALLINT DEFAULT NULL,
+    season_number SMALLINT NOT NULL,
     watched BOOL NOT NULL,
     rating SMALLINT DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),

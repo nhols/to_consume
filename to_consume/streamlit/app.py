@@ -1,7 +1,6 @@
 from to_consume.streamlit.sidebar import sidebar
 from to_consume.streamlit.watchlist_df import watchlist_df
-from to_consume.streamlit.search_titles import search_add_titles
-from to_consume.streamlit.display_title import display_title
+from to_consume.streamlit.display_title import select_display_title
 import streamlit as st
 
 from to_consume.watchlist import WatchList
@@ -16,6 +15,7 @@ def main_app():
     if st.session_state.watchlist.watchlist:
         watchlist_df(st.session_state.watchlist)
 
+    select_display_title()
     # selected_imdb_id = st.selectbox(
     #     "View title from watchlist",
     #     options=[None] + list(st.session_state.watchlist.watchlist.keys()),

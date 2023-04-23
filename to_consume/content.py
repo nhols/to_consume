@@ -44,6 +44,9 @@ class Title(MoviesDbTitle, StreamingInfoTitle):
             records.append(new_record)
         return records
 
+    def get_season_numbers(self) -> list[int]:
+        return list(set(episode.season_number for episode in self.episodes))
+
 
 class Episode(MoviesDbEpisode, StreamingInfoEpisode):
     def __init__(self, imdb_id: str, responses: dict) -> None:
