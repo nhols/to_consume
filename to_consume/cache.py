@@ -38,7 +38,7 @@ def fetch_entire_cache():
     return cache_dict
 
 
-def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
+def _fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
     cache = fetch_entire_cache()
     res = cache.get((api, endpoint, param))
     if res is not None:
@@ -47,7 +47,7 @@ def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
     return None
 
 
-def _fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
+def fetch_from_cache(api: str, endpoint: str, param: str) -> dict | None:
     conn = db_conn()
     with conn.cursor() as cur:
         cur.execute(f"SELECT response FROM cache WHERE api = %s AND endpoint = %s AND key = %s", (api, endpoint, param))
@@ -63,7 +63,7 @@ def write_to_cache(api: str, endpoint: str, param: str, res: dict) -> None:
     res_str = json.dumps(res)
     conn = db_conn()
     with conn.cursor() as cur:
-        try:
+        try:  # TODO upsert
             cur.execute(
                 f"INSERT INTO cache(api, endpoint, key, response) VALUES(%s,%s,%s,%s)", (api, endpoint, param, res_str)
             )

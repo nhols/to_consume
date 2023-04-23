@@ -37,7 +37,6 @@ CREATE TABLE title_episodes (
     episode_number SMALLINT NOT NULL,
     title TEXT,
     date_released DATE,
-    title_type TEXT,
     imdb_rating SMALLINT,
     imdb_rating_count SMALLINT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -52,11 +51,23 @@ CREATE TABLE watchlist (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     imdb_id TEXT NOT NULL REFERENCES titles(imdb_id) ON DELETE CASCADE,
+    watched BOOL NOT NULL,
+    rating SMALLINT DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (user_id, imdb_id)
+);
+
+CREATE TABLE watchlist_seasons (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    imdb_id TEXT NOT NULL,
     season_number SMALLINT DEFAULT NULL,
     watched BOOL NOT NULL,
     rating SMALLINT DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id, imdb_id) REFERENCES watchlist(user_id, imdb_id) ON DELETE CASCADE,
     UNIQUE (user_id, imdb_id, season_number)
 );
 

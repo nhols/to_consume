@@ -1,4 +1,4 @@
-from to_consume.title import Title
+from to_consume.content import Title
 import plotly.express as px
 import streamlit as st
 

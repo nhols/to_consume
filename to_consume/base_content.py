@@ -8,7 +8,7 @@ from pydantic import BaseModel, validator
 
 
 class BaseContent:
-    def __init__(self, imdb_id: str, responses:dict) -> None:
+    def __init__(self, imdb_id: str, responses: dict) -> None:
         self.imdb_id = imdb_id
         self.title = None
         self.type = None
@@ -17,7 +17,6 @@ class BaseContent:
         self.date_released = None
         self.streaming_platforms = None
         self.image_url = None
-        self.seasons: list[Season] = []
         self.overview: str = None
 
     def set_attr_from_dict_if_exists(
@@ -53,34 +52,18 @@ class BaseContent:
             columns=["season", "episode", "imdb_rating", "imdb_ratings_count", "overview"],
         )
 
+
 class BaseTitle:
-    def __init__(self, imdb_id: str, responses:dict) -> None:
+    def __init__(self, imdb_id: str, responses: dict) -> None:
+        super().__init__(imdb_id, responses)
+
+    def append_episode_responses(self, episode_responses: defaultdict[dict]) -> None:
         pass
 
-    def append_episode_responses(self, episode_imdb_ids:list[str], responses:defaultdict[dict]) -> None:
-        pass
 
 class BaseEpisode:
-    def __init__(self, imdb_id: str, responses:dict) -> None:
+    def __init__(self, imdb_id: str, responses: dict) -> None:
+        super().__init__(imdb_id, responses)
         self.imdb_id = imdb_id
         self.season_number = None
         self.episode_number = None
-
-class Episode(BaseModel):
-    imdb_id: str
-    title: str
-    imdb_rating: float | None = None
-    imdb_ratings_count: int = 0
-    overview: str | None = None
-
-    @validator("imdb_ratings_count", pre=True, allow_reuse=True)
-    def process_imdb_ratings_count(cls, imdb_ratings_count) -> int:
-        if imdb_ratings_count is None:
-            return 0
-        return imdb_ratings_count
-
-
-class Season(BaseModel):
-    number: int
-    episodes: list[Episode] = []
-    title: str | None = None

@@ -1,6 +1,6 @@
 from venv import logger
 from to_consume.exceptions import ItemAlreadyInListError, ItemNotInListError
-from to_consume.title import Title
+from to_consume.content import Title
 from to_consume.utils import db_conn
 
 
