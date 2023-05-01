@@ -88,13 +88,3 @@ CREATE TABLE cache (
 );
 
 CREATE INDEX cache_api_endpoint_key_idx ON cache (api, endpoint, key);
-
-ALTER TABLE
-    titles
-ALTER COLUMN
-    imdb_rating_count TYPE INT;
-
-ALTER TABLE
-    title_episodes
-ALTER COLUMN
-    imdb_rating_count TYPE INT;
