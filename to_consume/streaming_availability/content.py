@@ -33,8 +33,12 @@ class StreamingInfoTitle(BaseTitle, StreamingInfoContent):
     def get_episode_responses_sa(self) -> defaultdict[dict]:
         response = get_streaming_availability_gb(self.imdb_id)
         episode_responses = defaultdict(dict)
-        for season_number, season in enumerate(response.get("seasons", []), start=1):
-            for episode_number, episode in enumerate(season.get("episodes", []), start=1):
+        seasons = response.get("seasons", [])
+        seasons = [] if seasons is None else seasons
+        for season_number, season in enumerate(seasons, start=1):
+            episodes = season.get("episodes", [])
+            episodes = [] if episodes is None else episodes
+            for episode_number, episode in enumerate(episodes, start=1):
                 if episode.get("imdbId"):
                     episode_responses[episode["imdbId"]].update(
                         sa_basic=episode,
