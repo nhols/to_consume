@@ -66,8 +66,8 @@ class Episode(MoviesDbEpisode, StreamingInfoEpisode):
 
 def write_title_records(conn, title: Title) -> None:
     title_records = title.title_db_record()
-    insert_dicts(conn, "titles", [title_records])
+    insert_dicts(conn, "titles", [title_records], "ON CONFLICT DO NOTHING")
 
     ep_records = title.episode_db_records()
     if ep_records:
-        insert_dicts(conn, "title_episodes", ep_records)
+        insert_dicts(conn, "title_episodes", ep_records, "ON CONFLICT DO NOTHING")
