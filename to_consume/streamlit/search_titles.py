@@ -11,7 +11,7 @@ def search_add_titles():
 
 
 def add_by_id():
-    with st.form("add_titles"):
+    with st.form("add_titles", clear_on_submit=True):
         imdb_ids = st.text_input(
             "Add titles", placeholder="Add multiple titles by their IMDb IDs", help="Separate multiple IDs with commas"
         )
@@ -21,7 +21,7 @@ def add_by_id():
 
 
 def search_titles_to_add():
-    with st.form("search_titles"):
+    with st.form("search_titles", clear_on_submit=True):
         searched_title = st.text_input("Search title", placeholder="Search IMDb for a title")
         search_titles_clicked = st.form_submit_button("Search titles")
     if search_titles_clicked:

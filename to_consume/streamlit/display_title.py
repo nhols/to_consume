@@ -2,6 +2,7 @@ import logging
 from typing import Callable
 import streamlit as st
 from to_consume.content import Title
+from to_consume.streamlit.page_wrapper import page_wrapper
 
 from to_consume.streamlit.plot_episode_ratings import plot_episode_ratings
 from to_consume.streamlit.utils import fetch_title
@@ -9,6 +10,7 @@ from to_consume.streamlit.utils import fetch_title
 logger = logging.getLogger(__name__)
 
 
+@page_wrapper
 def select_display_title():
     selected_imdb_id = st.selectbox(
         "View title from watchlist",
@@ -55,7 +57,6 @@ def display_sections(title: Title, sections=list[Callable]) -> None:
         try:
             section(title)
         except Exception as e:
-            raise e
             logger.error(f"Error in section {section.__name__}: {e}")
             st.error("Issue loading this section")
         st.markdown("---")
