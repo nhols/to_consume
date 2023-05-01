@@ -9,6 +9,13 @@ from to_consume.movies_db.api import (
 from to_consume.movies_db.api_async import get_movies_db_urls_async, get_title_info_async, get_title_rating_async
 
 
+def parse_date(x: dict):
+    try:
+        return date(x["year"], x["month"], x["day"])
+    except:
+        return None
+
+
 class MoviesDbContent(BaseContent):
     def __init__(self, imdb_id: str, responses: dict) -> None:
         super().__init__(imdb_id, responses)
@@ -19,7 +26,7 @@ class MoviesDbContent(BaseContent):
             responses,
             "date_released",
             ["mdb_title_info", "releaseDate"],
-            lambda x: date(x["year"], x["month"], x["day"]),
+            lambda x: parse_date,
         )
         self.set_attr_from_dict_if_exists(responses, "avg_imdb_rating", ["mdb_title_rating", "averageRating"])
         self.set_attr_from_dict_if_exists(responses, "imdb_ratings_count", ["mdb_title_rating", "numVotes"])
