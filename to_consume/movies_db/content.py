@@ -28,7 +28,9 @@ class MoviesDbContent(BaseContent):
             ["mdb_title_info", "releaseDate"],
             parse_date,
         )
-        self.set_attr_from_dict_if_exists(responses, "avg_imdb_rating", ["mdb_title_rating", "averageRating"])
+        self.set_attr_from_dict_if_exists(
+            responses, "avg_imdb_rating", ["mdb_title_rating", "averageRating"], lambda x: x * 100
+        )
         self.set_attr_from_dict_if_exists(responses, "imdb_ratings_count", ["mdb_title_rating", "numVotes"])
 
 
@@ -68,8 +70,19 @@ class MoviesDbTitle(BaseTitle, MoviesDbContent):
         return episode_responses
 
 
+def safe_season_ep_number(x):
+    try:
+        return int(x)
+    except:
+        return None
+
+
 class MoviesDbEpisode(BaseEpisode, MoviesDbContent):
     def __init__(self, imdb_id: str, responses: dict) -> None:
         super().__init__(imdb_id, responses)
-        self.set_attr_from_dict_if_exists(responses, "season_number", ["mdb_series", "seasonNumber"])
-        self.set_attr_from_dict_if_exists(responses, "episode_number", ["mdb_series", "episodeNumber"])
+        self.set_attr_from_dict_if_exists(
+            responses, "season_number", ["mdb_series", "seasonNumber"], safe_season_ep_number
+        )
+        self.set_attr_from_dict_if_exists(
+            responses, "episode_number", ["mdb_series", "episodeNumber"], safe_season_ep_number
+        )

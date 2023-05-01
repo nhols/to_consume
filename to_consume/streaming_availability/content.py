@@ -11,7 +11,7 @@ class StreamingInfoContent(BaseContent):
         self.set_attr_from_dict_if_exists(responses, "overview", ["sa_basic", "overview"])
         self.set_attr_from_dict_if_exists(responses, "tagline", ["sa_basic", "tagline"])
         self.set_attr_from_dict_if_exists(responses, "image_url", ["sa_basic", "posterURLs", "original"])
-        self.set_attr_from_dict_if_exists(responses, "avg_imdb_rating", ["sa_basic", "imdbRating"], lambda x: x / 10)
+        self.set_attr_from_dict_if_exists(responses, "avg_imdb_rating", ["sa_basic", "imdbRating"])
         self.set_attr_from_dict_if_exists(responses, "imdb_ratings_count", ["sa_basic", "imdbVoteCount"])
         self.set_attr_from_dict_if_exists(responses, "trailer_url", ["sa_basic", "youtubeTrailerVideoLink"])
         self.set_attr_from_dict_if_exists(
