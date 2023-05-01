@@ -74,7 +74,7 @@ def safe_season_ep_number(x):
     try:
         return int(x)
     except:
-        return None
+        return -1
 
 
 class MoviesDbEpisode(BaseEpisode, MoviesDbContent):
