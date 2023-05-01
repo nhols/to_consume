@@ -59,6 +59,10 @@ CREATE TABLE watchlist (
     UNIQUE (user_id, imdb_id)
 );
 
+CREATE TRIGGER watchlist_updated_at_refresh BEFORE
+UPDATE
+    ON watchlist FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
 CREATE TABLE watchlist_seasons (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
@@ -72,9 +76,9 @@ CREATE TABLE watchlist_seasons (
     UNIQUE (user_id, imdb_id, season_number)
 );
 
-CREATE TRIGGER watchlist_updated_at_refresh BEFORE
+CREATE TRIGGER watchlist_seasons_updated_at_refresh BEFORE
 UPDATE
-    ON watchlist FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+    ON watchlist_seasons FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TABLE cache (
     id SERIAL PRIMARY KEY,
