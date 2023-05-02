@@ -3,6 +3,7 @@ from to_consume.content import Title, write_title_records
 from to_consume.streamlit.db_utils import db_conn
 
 from psycopg2.extras import RealDictCursor
+import streamlit as st
 
 ItemStatus = tuple[bool, int]
 
@@ -30,8 +31,7 @@ class WatchList:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(query, (self.user_id,))
             res = cursor.fetchall()
-
-        return {result["imdb_id"]: {result["season_number"]: result} for result in res}
+        return {(result["imdb_id"], result["season_number"]): result for result in res}
 
     def load_watchlist_titles(self) -> dict:
         query = """
@@ -58,7 +58,7 @@ class WatchList:
         return record["watched"], record["rating"]
 
     def get_season_status(self, imdb_id: str, season: int) -> ItemStatus:
-        record = self.watchlist_seasons.get(imdb_id, {}).get(season)
+        record = self.watchlist_seasons.get((imdb_id, season))
         if record is None:
             return False, None
         return record["watched"], record["rating"]
