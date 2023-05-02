@@ -28,7 +28,9 @@ class MoviesDbContent(BaseContent):
             ["mdb_title_info", "releaseDate"],
             parse_date,
         )
-        self.set_attr_from_dict_if_exists(responses, "avg_imdb_rating", ["mdb_title_rating", "averageRating"])
+        self.set_attr_from_dict_if_exists(
+            responses, "avg_imdb_rating", ["mdb_title_rating", "averageRating"], lambda x: x * 10
+        )
         self.set_attr_from_dict_if_exists(responses, "imdb_ratings_count", ["mdb_title_rating", "numVotes"])
 
 
