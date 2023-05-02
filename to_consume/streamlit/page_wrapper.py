@@ -17,10 +17,11 @@ def page_wrapper(wrapped_fun):
         name, authentication_status, username = authenticator.login("Login", "main")
 
         if authentication_status:
-            authenticator.logout("Logout", "main")
+            authenticator.logout("Logout", "sidebar")
             st.session_state.user_id = get_user_id(username)
             if "watchlist" not in st.session_state:
                 st.session_state.watchlist = WatchList(st.session_state.user_id)
+            st.markdown(f"{st.session_state.name}'s watchlist")
             wrapped_fun(*args, **kwargs)
         elif authentication_status is False:
             st.error("Username/password is incorrect")

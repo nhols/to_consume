@@ -5,17 +5,15 @@ from to_consume.content import Title
 from to_consume.streamlit.page_wrapper import page_wrapper
 
 from to_consume.streamlit.plot_episode_ratings import plot_episode_ratings
-from to_consume.streamlit.utils import fetch_title
+from to_consume.streamlit.utils import fetch_title, title_selector
 
 logger = logging.getLogger(__name__)
 
 
 @page_wrapper
 def select_display_title():
-    selected_imdb_id = st.selectbox(
+    selected_imdb_id = title_selector(
         "View title from watchlist",
-        options=[None] + list(st.session_state.watchlist.watchlist.keys()),
-        format_func=lambda x: "" if x is None else st.session_state.watchlist.watchlist_titles[x].get("title", x),
     )
     if selected_imdb_id:
         display_title(selected_imdb_id)
@@ -30,26 +28,21 @@ def display_title(imdb_id: str) -> None:
 
     with col1:
         if title.image_url:
-            st.image(title.image_url, width=400)
+            st.image(title.image_url, use_column_width=True)
 
     with col2:
         display_sections(
             title,
             [
-                main_watched_checkbox_rating_slider,
                 text_description,
                 links,
                 streaming_platform_links,
                 ratings,
                 delete_button,
-                seasons_watched_checkbox_rating_slider,
             ],
         )
 
     display_sections(title, [trailer])
-    # watched = st.checkbox("Watched", value=title["watched"])
-    # rating = st.slider("Rating", value=title["rating"], min_value=1, max_value=100, disabled=not watched)
-    # st.button(label="Update status", args=[selected_imdb_id, watched, rating], on_click=st_update_watchlist)
 
 
 def display_sections(title: Title, sections=list[Callable]) -> None:
@@ -98,53 +91,6 @@ def trailer(title: Title) -> None:
 def safe_write(obj, attr):
     value = getattr(obj, attr, "")
     st.markdown(value)
-
-
-def main_watched_checkbox_rating_slider(title: Title) -> None:
-    status = st.session_state.watchlist.get_status(title.imdb_id)
-    watched_checkbox_rating_slider(title.imdb_id, *status)
-
-
-def seasons_watched_checkbox_rating_slider(title: Title) -> None:
-    seasons = title.get_season_numbers()
-    if not seasons:
-        return
-    with st.expander(f"Seasons", expanded=False):
-        for season in seasons:
-            status = st.session_state.watchlist.get_season_status(title.imdb_id, season)
-            watched_checkbox_rating_slider(title.imdb_id, *status, season)
-
-
-def watched_checkbox_rating_slider(imdb_id: str, watched: bool, rating: int, season: int | None = None) -> None:
-    watched = st.checkbox("Watched", value=watched, key=f"watched_checkbox_{imdb_id}_{season}")
-    rating = st.slider(
-        "Rating",
-        value=rating,
-        min_value=1,
-        max_value=100,
-        disabled=not watched,
-        key=f"rating_slider_{imdb_id}_{season}",
-    )
-    with st.form(key=f"watched_checkbox_rating_slider_imdb_id_{season}"):
-        st.form_submit_button(
-            label="Update status", args=[imdb_id, watched, rating, season], on_click=st_update_watchlist
-        )
-
-
-def st_update_watchlist(imdb_id: str, watched: bool, rating: int, season: int | None) -> None:
-    if not watched:
-        rating = None
-    if season:
-        st.session_state.watchlist.upsert_watchlist_seasons(
-            imdb_id,
-            season,
-            watched,
-            rating,
-        )
-    else:
-        st.session_state.watchlist.upsert_watchlist(imdb_id, watched, rating)
-    season_msg = f"season {season}" if season else ""
-    st.success(f"Updated title status {season_msg} {imdb_id}: watched={watched}, rating={rating}")
 
 
 def st_delete_from_list(imdb_id: str) -> None:
