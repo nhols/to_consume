@@ -25,17 +25,17 @@ def rate_title(imdb_id: str):
             with st.expander("Seasons"):
                 for season in title_seasons:
                     answers[(imdb_id, season)] = season_watched_checkbox_rating_slider(imdb_id, season)
-        st.form_submit_button("Update ratings", on_click=st_update_watchlist_all, args=(answers,))
+        st.form_submit_button("Update ratings", on_click=st_update_watchlist_all, args=(imdb_id, title_seasons))
 
 
 def main_watched_checkbox_rating_slider(imdb_id: str) -> None:
     status = st.session_state.watchlist.get_status(imdb_id)
-    return watched_checkbox_rating_slider(imdb_id, *status)
+    watched_checkbox_rating_slider(imdb_id, *status)
 
 
 def season_watched_checkbox_rating_slider(imdb_id: str, season: int) -> None:
     status = st.session_state.watchlist.get_season_status(imdb_id, season)
-    return watched_checkbox_rating_slider(imdb_id, *status, season)
+    watched_checkbox_rating_slider(imdb_id, *status, season)
 
 
 def watched_checkbox_rating_slider(imdb_id: str, watched: bool, rating: int, season: int | None = None) -> None:
@@ -52,11 +52,12 @@ def watched_checkbox_rating_slider(imdb_id: str, watched: bool, rating: int, sea
         key=f"rating_slider_{imdb_id}_{season}",
     )
     st.markdown("---")
-    return watched, rating
 
 
-def st_update_watchlist_all(answers: dict[tuple[str, int | None], tuple[bool, int]]) -> None:
-    for (imdb_id, season), (watched, rating) in answers.items():
+def st_update_watchlist_all(imdb_id: str, seasons: list[int]) -> None:
+    for season in [None] + seasons:
+        watched = st.session_state[f"watched_checkbox_{imdb_id}_{season}"]
+        rating = st.session_state[f"rating_slider_{imdb_id}_{season}"]
         st_update_watchlist(imdb_id, season, watched, rating)
     sleep(1)
 
