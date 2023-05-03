@@ -123,7 +123,7 @@ class WatchList:
         conn = db_conn()
         with conn.cursor() as cursor:
             cursor.execute(
-                "DELETE FROM watchlist WHERE user_id = %s AND imdb_id = %s CASCADE;",
+                "DELETE FROM watchlist WHERE user_id = %s AND imdb_id = %s;",
                 (self.user_id, imdb_id),
             )
             conn.commit()
