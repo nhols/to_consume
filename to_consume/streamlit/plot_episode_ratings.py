@@ -20,7 +20,7 @@ def plot_episode_ratings(title: Title):
     episode_data = [get_episode_plot_data(episode) for episode in title.episodes]
     if not episode_data:
         return None
-    df = DataFrame.from_records(episode_data)
+    df = DataFrame.from_records(episode_data).sort_values(["season_number", "episode_number"]).reset_index(drop=True)
     df.loc[df["imdb_rating"] == 0, "imdb_rating"] = None
     if not df.empty:
         fig = px.line(
