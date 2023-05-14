@@ -1,4 +1,4 @@
-def get_stale_records(conn, stale_threshold=0.1) -> list[str]:
+def get_stale_records(conn, days_lower_threshold: int = 7, staleness_upper_threshold=0.1) -> list[str]:
     query = """
         WITH dates AS (
             SELECT
@@ -26,6 +26,7 @@ def get_stale_records(conn, stale_threshold=0.1) -> list[str]:
         stale AS (
             SELECT
                 DISTINCT ON (imdb_id) imdb_id,
+                (CURRENT_DATE - updated_at) :: INT  stale_days,
                 (CURRENT_DATE - updated_at) :: FLOAT / GREATEST((CURRENT_DATE - date_released) :: FLOAT, 1.0) staleness
             FROM
                 dates2
@@ -38,9 +39,15 @@ def get_stale_records(conn, stale_threshold=0.1) -> list[str]:
         FROM
             stale
         WHERE
-            staleness > %s;
+            staleness > %s AND stale_days > %s;
     """
     with conn.cursor() as cursor:
-        cursor.execute(query, (stale_threshold,))
+        cursor.execute(
+            query,
+            (
+                staleness_upper_threshold,
+                days_lower_threshold,
+            ),
+        )
         res = cursor.fetchall()
     return [r[0] for r in res]
