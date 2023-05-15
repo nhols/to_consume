@@ -73,5 +73,8 @@ def write_title_records(conn, title: Title) -> None:
     ep_records = title.episode_db_records()
     if ep_records:
         insert_dicts(
-            conn, "title_episodes", ep_records, suffix=update_on_conflict_str(["episode_imdb_id"], ep_update_cols)
+            conn,
+            "title_episodes",
+            ep_records,
+            suffix=update_on_conflict_str(["title_imdb_id", "season_number", "episode_number"], ep_update_cols),
         )
