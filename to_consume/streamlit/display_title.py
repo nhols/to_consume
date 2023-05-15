@@ -5,6 +5,7 @@ from to_consume.content import Title
 from to_consume.streamlit.page_wrapper import page_wrapper
 
 from to_consume.streamlit.plot_episode_ratings import plot_episode_ratings
+from to_consume.streamlit.refresh import referesh_stale_records
 from to_consume.streamlit.utils import fetch_title, title_selector
 
 logger = logging.getLogger(__name__)
@@ -33,13 +34,7 @@ def display_title(imdb_id: str) -> None:
     with col2:
         display_sections(
             title,
-            [
-                text_description,
-                links,
-                streaming_platform_links,
-                ratings,
-                delete_button,
-            ],
+            [text_description, links, streaming_platform_links, ratings, delete_button, refresh_button],
         )
 
     display_sections(title, [trailer])
@@ -82,6 +77,10 @@ def ratings(title: Title) -> None:
 
 def delete_button(title: Title) -> None:
     st.button("Remove from list", args=[title.imdb_id], on_click=st_delete_from_list)
+
+
+def refresh_button(title: Title) -> None:
+    st.button("Refresh", args=[[title.imdb_id]], on_click=referesh_stale_records)
 
 
 def trailer(title: Title) -> None:

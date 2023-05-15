@@ -72,3 +72,12 @@ def write_to_cache(api: str, endpoint: str, param: str, res: dict) -> None:
         except UniqueViolation:
             logging.warning(f"Duplicate entry for {api}, {endpoint}, {param}, cache could be out of date")
             conn.rollback()
+
+
+def delete_from_cache(keys: list[str]) -> None:
+    logging.info(f"Deleting cached result for {keys}")
+    conn = db_conn()
+    keys = ",".join(keys)
+    with conn.cursor() as cur:
+        cur.execute(f"DELETE FROM cache WHERE key IN (%s)", (keys,))
+        conn.commit()

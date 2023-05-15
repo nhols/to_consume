@@ -4,7 +4,7 @@ from urllib.parse import quote
 
 from to_consume.movies_db.content import MoviesDbEpisode, MoviesDbTitle
 from to_consume.streaming_availability.content import StreamingInfoEpisode, StreamingInfoTitle
-from to_consume.utils import insert_dicts
+from to_consume.utils import get_update_cols_str, insert_dicts, update_on_conflict_str
 
 
 class Title(MoviesDbTitle, StreamingInfoTitle):
@@ -66,8 +66,15 @@ class Episode(MoviesDbEpisode, StreamingInfoEpisode):
 
 def write_title_records(conn, title: Title) -> None:
     title_records = title.title_db_record()
-    insert_dicts(conn, "titles", [title_records], suffix="ON CONFLICT DO NOTHING")
+    title_update_cols = ["title", "date_released", "title_type", "imdb_rating", "imdb_rating_count"]
+    insert_dicts(conn, "titles", [title_records], suffix=update_on_conflict_str(["imdb_id"], title_update_cols))
 
+    ep_update_cols = ["title", "date_released", "imdb_rating", "imdb_rating_count"]
     ep_records = title.episode_db_records()
     if ep_records:
-        insert_dicts(conn, "title_episodes", ep_records, suffix="ON CONFLICT DO NOTHING")
+        insert_dicts(
+            conn,
+            "title_episodes",
+            ep_records,
+            suffix=update_on_conflict_str(["title_imdb_id", "season_number", "episode_number"], ep_update_cols),
+        )
