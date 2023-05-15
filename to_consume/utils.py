@@ -23,3 +23,16 @@ def insert_dicts(
     with conn.cursor() as cur:
         cur.executemany(query, dict_ins)
         conn.commit()
+
+
+def update_on_conflict_str(key: list[str], upd_cols: list[str]) -> str:
+    key = ", ".join(key)
+    upd_cols = get_update_cols_str(upd_cols)
+    return f"ON CONFLICT ({key}) DO UPDATE {upd_cols}"
+
+
+def get_update_cols_str(cols: list[str]) -> str:
+    excluded_cols = [f"EXCLUDED.{col}" for col in cols]
+    cols = ", ".join(cols)
+    excluded_cols = ", ".join(excluded_cols)
+    return f"SET ({cols}) = ({excluded_cols})"
